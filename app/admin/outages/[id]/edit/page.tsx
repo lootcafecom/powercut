@@ -9,6 +9,8 @@ import {
 import { OutageForm } from "@/components/admin/outage-form";
 import { updateOutage } from "@/lib/actions/outage-actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function EditOutagePage({
   params,
 }: {

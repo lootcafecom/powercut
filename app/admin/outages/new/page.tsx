@@ -2,6 +2,8 @@ import { getAllStates, getAllProviders, getAllCities, getAllLocalities } from "@
 import { OutageForm } from "@/components/admin/outage-form";
 import { createOutage } from "@/lib/actions/outage-actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function NewOutagePage() {
   const [states, providers, cities, localities] = await Promise.all([
     getAllStates(),
