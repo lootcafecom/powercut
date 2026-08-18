@@ -34,14 +34,29 @@ more cities/providers next.
 
 ```bash
 npm install
-npm run db:push       # creates powercut.db (SQLite) from the schema
-npm run db:seed       # seeds Karnataka / Bengaluru / BESCOM / sample outages
-npm run dev            # http://localhost:3000
+npm run dev            # http://localhost:3000 — auto-creates and seeds the DB on first request
 ```
+
+For production (`npm run build && npm run start`), the database schema is
+applied and demo data seeded **automatically on every server start** via
+`scripts/bootstrap-db.mjs` (wired into the `start` script) — safe to re-run
+on every boot/redeploy since it skips seeding once real data exists. No
+manual `db:push`/`db:seed` step is required on a deploy host. Those
+commands still exist for local/manual use if you want them.
 
 Admin login: `http://localhost:3000/admin/outages` → redirects to
 `/admin/login`. Default password is `powercut-admin` (set `ADMIN_PASSWORD`
 env var to change it — do this before deploying anywhere real).
+
+## Deploying (e.g. Railway/Render)
+
+1. Set env vars: `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, and
+   `DATABASE_FILE` (pointing at a path on a persistent volume, e.g.
+   `/data/powercut.db` — without a volume, data resets on every restart,
+   which is fine for a demo but not for real data).
+2. Build command: `npm install && npm run build`. Start command:
+   `npm run start` (this now runs the DB bootstrap automatically first).
+3. That's it — no shell access or CLI needed for first-time setup.
 
 ## Deliberate engineering decisions (read before extending)
 
