@@ -17,7 +17,8 @@ if (!fs.existsSync(dbDir)) {
 console.log(`[bootstrap-db] Using database file: ${dbPath}`);
 
 const sqlite = new Database(dbPath);
-sqlite.pragma("journal_mode = WAL");
+// See lib/db/index.ts for why this is DELETE and not WAL.
+sqlite.pragma("journal_mode = DELETE");
 sqlite.pragma("foreign_keys = ON");
 const db = drizzle(sqlite);
 

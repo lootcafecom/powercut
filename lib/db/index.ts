@@ -30,7 +30,13 @@ function getSqlite() {
   }
 
   _sqlite = new Database(dbPath);
-  _sqlite.pragma("journal_mode = WAL");
+  // NOTE: deliberately NOT using WAL journal mode. WAL relies on
+  // memory-mapped shared files (-wal/-shm), which segfaults the native
+  // SQLite binding on some persistent-volume filesystems (observed on
+  // Railway volumes). The default rollback journal is slightly slower
+  // under heavy concurrent writes but is safe everywhere, and this app's
+  // write volume doesn't come close to needing WAL's benefits.
+  _sqlite.pragma("journal_mode = DELETE");
   _sqlite.pragma("foreign_keys = ON");
   return _sqlite;
 }
