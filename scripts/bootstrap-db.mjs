@@ -1,11 +1,18 @@
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
+import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = process.env.DATABASE_FILE || path.join(process.cwd(), "powercut.db");
+const dbDir = path.dirname(dbPath);
+
+if (!fs.existsSync(dbDir)) {
+  console.log(`[bootstrap-db] Creating directory: ${dbDir}`);
+  fs.mkdirSync(dbDir, { recursive: true });
+}
 
 console.log(`[bootstrap-db] Using database file: ${dbPath}`);
 
