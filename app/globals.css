@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+/*
+  Design direction: "grid status console" — the site should read like an
+  instrument panel for the electricity grid, not a decorated consumer app.
+  Amber/black hazard-stripe accents are used once, sparingly, as the
+  signature element (the live sync strip). Content areas stay plain,
+  high-contrast and calm, because for this product data reliability is
+  the whole point — not the decoration.
+
+  Palette:
+    --color-ink        #12181F  headers / high-contrast text / console chrome
+    --color-paper      #F6F7F5  content background (cool, not the cream cliche)
+    --color-paper-2    #EFF1EE  secondary surface
+    --color-line       #D7DAD6  borders / dividers
+    --color-signal     #E8A33D  amber accent — scheduled / attention / CTA
+    --color-signal-ink #7A4B0F  amber text-on-light
+    --color-alert      #C1432E  ongoing outage / urgent
+    --color-ok         #3F9142  restored / confirmed-good
+    --color-muted      #5B6570  secondary text
+*/
+
+:root {
+  --background: #f6f7f5;
+  --foreground: #12181f;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ink: #12181f;
+  --color-paper: #f6f7f5;
+  --color-paper-2: #eff1ee;
+  --color-line: #d7dad6;
+  --color-signal: #e8a33d;
+  --color-signal-ink: #7a4b0f;
+  --color-alert: #c1432e;
+  --color-ok: #3f9142;
+  --color-muted: #5b6570;
+
+  --font-sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Arial Narrow", "Helvetica Neue Condensed", "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "IBM Plex Mono", Menlo, Consolas, monospace;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+/* Condensed, tracked-out uppercase treatment stands in for a bespoke
+   display face — weight/tracking/case carry the "signage" personality
+   since no external font files are available in this environment. */
+.font-display {
+  font-family: var(--font-display);
+  font-stretch: condensed;
+  letter-spacing: -0.01em;
+}
+
+.tabular-nums-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.hazard-corner {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-signal),
+    var(--color-signal) 6px,
+    var(--color-ink) 6px,
+    var(--color-ink) 12px
+  );
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pulse-dot {
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
