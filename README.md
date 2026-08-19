@@ -78,6 +78,56 @@ env var to change it — do this before deploying anywhere real).
 - Wire a second city (e.g. Chennai/TANGEDCO) to prove the multi-provider,
   multi-state geography actually holds up.
 - Replace MVP auth with NextAuth + a real `users` table and roles.
-- Build one real provider adapter (`discover/fetch/parse/normalize`)
-  against a public BESCOM notice page, landing extracted rows in a
-  `source_documents` table for review before publish.
+- A second, higher-confidence source once one becomes automatable —
+  BESCOM's own official site currently blocks automated access via
+  robots.txt, so this couldn't be built against them directly (see below).
+
+## Source ingestion: OneIndia (secondary source)
+
+BESCOM's official Planned Outages page (`bescom.karnataka.gov.in`)
+disallows automated access in its `robots.txt`. Building a scraper against
+it anyway would mean bypassing an access control the site owner
+deliberately set — this project won't do that (see the master spec,
+section 13, and this codebase's own values around legitimate access).
+
+So the only real-data source currently wired up is **OneIndia's Bengaluru
+power-cut page**, which does allow fetching and itself aggregates from
+BESCOM notices. Because it's a secondary/aggregator source, not BESCOM
+directly, everything from it is treated accordingly:
+
+- `lib/sources/oneindia-fetch.ts` — fetches the page, strips HTML to plain
+  text.
+- `lib/sources/oneindia-extractor.ts` — **rule-based only, no LLM calls**
+  (by design/request) — regex pattern matching pulls (locality, date,
+  start, end) candidates out of free-form prose. This has real limits:
+  phrasing OneIndia hasn't used before may not match. Tested against real
+  page content and works well for the phrasings observed, but expect
+  gaps — that trade-off was accepted deliberately over adding an LLM
+  dependency.
+- `lib/sources/locality-match.ts` — matches extracted locality names
+  against your existing `localities` table. **Deliberately does not
+  auto-create new localities** from unverified source text — an
+  unmatched name gets flagged `(unmapped)` on the outage record instead,
+  for an admin to either map or create deliberately. This avoids the
+  geography tables filling up with junk from extraction mistakes.
+- `lib/sources/ingest-oneindia.ts` — orchestrates fetch → store raw
+  snapshot in `source_documents` → extract → match → dedupe (by
+  city+locality+date+start+end fingerprint) → insert.
+- **Every record this creates lands as `verificationStatus =
+  pending_review` with `confidenceScore = 40`**, regardless of anything
+  else — nothing from this source can reach the public site without a
+  human reviewing it in `/admin/outages` and publishing manually. This
+  isn't just a threshold default; it's hardcoded, on purpose.
+- Copyright: the extractor pulls out facts (locality, time, reason),
+  never OneIndia's sentences — the `description` field is written in this
+  app's own words, with the raw sentence kept internally for admin
+  cross-reference only, never displayed publicly.
+
+**Triggering it:**
+- Manually: `/admin/sources` → "Fetch OneIndia now" button.
+- Automatically: point an external free scheduler (e.g. cron-job.org) at
+  `POST https://<your-domain>/api/admin/ingest/oneindia` daily, with
+  header `x-ingest-secret: <your INGEST_SECRET value>`. OneIndia says
+  BESCOM updates happen "every evening for the next day" — an evening
+  fetch (e.g. 8–9 PM IST) is the natural cadence; a morning re-check
+  catches late updates.

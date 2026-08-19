@@ -6,6 +6,7 @@ import {
   localities,
   electricityProviders,
   powerOutages,
+  sourceDocuments,
 } from "./schema";
 
 export async function getCityBySlug(stateSlug: string, citySlug: string) {
@@ -66,6 +67,22 @@ export async function getOutageById(id: number) {
     .where(eq(powerOutages.id, id))
     .limit(1);
   return rows[0] ?? null;
+}
+
+export async function getRecentSourceDocuments(limit = 20) {
+  return db
+    .select()
+    .from(sourceDocuments)
+    .orderBy(desc(sourceDocuments.fetchedAt))
+    .limit(limit);
+}
+
+export async function getPendingReviewCount() {
+  const rows = await db
+    .select({ id: powerOutages.id })
+    .from(powerOutages)
+    .where(eq(powerOutages.verificationStatus, "pending_review"));
+  return rows.length;
 }
 
 export async function getAllStates() {

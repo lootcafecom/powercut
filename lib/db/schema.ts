@@ -121,6 +121,21 @@ export const sourceTypeValues = [
   "user_report",
 ] as const;
 
+// Raw snapshot of a fetched source page, kept so extraction can be
+// re-run/debugged and every published outage has a traceable origin.
+export const sourceDocuments = pgTable("source_documents", {
+  id: serial("id").primaryKey(),
+  sourceName: text("source_name").notNull(), // e.g. "oneindia_bengaluru"
+  url: text("url").notNull(),
+  contentHash: text("content_hash").notNull(),
+  rawText: text("raw_text").notNull(),
+  fetchedAt: text("fetched_at").notNull().default(sql`now()::text`),
+  processingStatus: text("processing_status").notNull().default("pending"), // pending | processed | failed
+  processingError: text("processing_error"),
+  processedAt: text("processed_at"),
+  recordsExtracted: integer("records_extracted").default(0),
+});
+
 export const powerOutages = pgTable("power_outages", {
   id: serial("id").primaryKey(),
 

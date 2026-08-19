@@ -30,6 +30,12 @@ export default async function AdminOutagesPage() {
           </p>
         </div>
         <Link
+          href="/admin/sources"
+          className="rounded-md border border-line px-4 py-2 text-sm font-semibold uppercase tracking-wide text-ink hover:bg-paper-2"
+        >
+          Sources
+        </Link>
+        <Link
           href="/admin/outages/new"
           className="rounded-md bg-ink px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white hover:bg-ink/90"
         >
