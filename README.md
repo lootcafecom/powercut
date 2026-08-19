@@ -113,11 +113,20 @@ directly, everything from it is treated accordingly:
 - `lib/sources/ingest-oneindia.ts` — orchestrates fetch → store raw
   snapshot in `source_documents` → extract → match → dedupe (by
   city+locality+date+start+end fingerprint) → insert.
-- **Every record this creates lands as `verificationStatus =
-  pending_review` with `confidenceScore = 40`**, regardless of anything
-  else — nothing from this source can reach the public site without a
-  human reviewing it in `/admin/outages` and publishing manually. This
-  isn't just a threshold default; it's hardcoded, on purpose.
+- **Every record this creates is auto-published immediately** (per
+  explicit request — no manual review queue). The safeguard used instead:
+  every public-facing card and every admin list row for a non-official
+  source shows a visible **"⚠ Unverified — [source name]"** badge, so
+  nothing pretends to be as trustworthy as an official BESCOM source. See
+  `lib/sources/source-meta.ts` for the display-name mapping.
+- **Fuzzy deduplication.** Candidates aren't just checked for an exact
+  timestamp match — anything in the same city+locality+date whose time
+  window overlaps (or starts within an hour of) an existing record is
+  treated as the same real-world event. If a genuinely different source
+  corroborates an existing record instead of duplicating it, that
+  record's confidence score bumps up (capped well below what an official
+  source gets) rather than creating a second row. See
+  `lib/sources/ingest-oneindia.ts`.
 - Copyright: the extractor pulls out facts (locality, time, reason),
   never OneIndia's sentences — the `description` field is written in this
   app's own words, with the raw sentence kept internally for admin

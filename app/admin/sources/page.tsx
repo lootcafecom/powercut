@@ -22,20 +22,23 @@ export default async function AdminSourcesPage() {
         Sources
       </h1>
       <p className="mt-1 text-sm text-muted">
-        Secondary-source ingestion (OneIndia). Everything this creates lands
-        in{" "}
+        Automated ingestion from secondary sources. Records publish
+        automatically — every card on the public site is labeled
+        &ldquo;Unverified&rdquo; when it comes from here rather than an
+        official provider source. See{" "}
         <Link href="/admin/outages" className="underline">
-          pending review
+          all outages
         </Link>{" "}
-        — nothing from here publishes automatically.
+        to review or edit anything this creates.
       </p>
 
       {pendingCount > 0 && (
         <div className="mt-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
-          {pendingCount} outage{pendingCount === 1 ? "" : "s"} waiting for
-          review in{" "}
+          {pendingCount} outage{pendingCount === 1 ? "" : "s"} still sitting
+          in manual pending-review (from before auto-publish was enabled, or
+          from the admin form) —{" "}
           <Link href="/admin/outages" className="underline font-medium">
-            the outages list
+            check the outages list
           </Link>
           .
         </div>

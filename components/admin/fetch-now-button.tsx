@@ -27,6 +27,7 @@ export function FetchNowButton() {
         candidatesFound: 0,
         recordsCreated: 0,
         recordsSkippedDuplicate: 0,
+        recordsCorroborated: 0,
         recordsUnmatchedLocality: 0,
         error: "Request failed",
       });
@@ -52,8 +53,9 @@ export function FetchNowButton() {
           ) : (
             <ul className="space-y-0.5 text-ink">
               <li>Candidates found: {result.candidatesFound}</li>
-              <li>New records created (pending review): {result.recordsCreated}</li>
+              <li>New records published: {result.recordsCreated}</li>
               <li>Skipped as duplicates: {result.recordsSkippedDuplicate}</li>
+              <li>Corroborated by a second source: {result.recordsCorroborated ?? 0}</li>
               <li>Unmatched localities (need mapping): {result.recordsUnmatchedLocality}</li>
               <li className="text-muted">
                 Page content changed since last fetch: {result.contentChanged ? "yes" : "no"}

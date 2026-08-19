@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAllOutagesForAdmin } from "@/lib/db/queries";
 import { computeOutageStatus, statusLabels, statusColorClasses } from "@/lib/outage-status";
+import { getSourceMeta } from "@/lib/sources/source-meta";
 import { formatDateTimeIST } from "@/lib/format";
 import { deleteOutage, markVerifiedNow } from "@/lib/actions/outage-actions";
 
@@ -50,6 +51,7 @@ export default async function AdminOutagesPage() {
               <th className="px-4 py-3">Locality</th>
               <th className="px-4 py-3">Window</th>
               <th className="px-4 py-3">Live status</th>
+              <th className="px-4 py-3">Source</th>
               <th className="px-4 py-3">Verification</th>
               <th className="px-4 py-3">Confidence</th>
               <th className="px-4 py-3">Last verified</th>
@@ -59,6 +61,7 @@ export default async function AdminOutagesPage() {
           <tbody>
             {rows.map(({ outage, locality, provider }) => {
               const status = computeOutageStatus(outage);
+              const sourceMeta = getSourceMeta(outage.sourceUrl, outage.sourceType);
               return (
                 <tr key={outage.id} className="border-b border-line last:border-0">
                   <td className="px-4 py-3">
@@ -75,6 +78,12 @@ export default async function AdminOutagesPage() {
                       className={`rounded-full border px-2 py-0.5 text-xs font-semibold uppercase ${statusColorClasses[status]}`}
                     >
                       {statusLabels[status]}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-xs">
+                    <span className={sourceMeta.official ? "text-emerald-700" : "text-amber-700"}>
+                      {sourceMeta.official ? "✓ " : "⚠ "}
+                      {sourceMeta.displayName}
                     </span>
                   </td>
                   <td className="px-4 py-3">

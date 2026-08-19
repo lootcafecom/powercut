@@ -7,17 +7,7 @@ import {
 } from "@/lib/outage-status";
 import { formatTimeIST, formatDateTimeIST, durationMinutes } from "@/lib/format";
 import { preparationTips } from "@/lib/preparation";
-
-const sourceTypeLabels: Record<string, string> = {
-  official_website: "Official provider website",
-  official_api: "Official provider API",
-  official_pdf: "Official provider notice (PDF)",
-  official_notice: "Official notice",
-  official_social: "Official social media",
-  trusted_secondary_source: "Trusted secondary source",
-  manual: "Manually entered by admin",
-  user_report: "User report",
-};
+import { getSourceMeta } from "@/lib/sources/source-meta";
 
 const statusBarClasses: Record<OutageStatus, string> = {
   cancelled: "bg-slate-300",
@@ -49,6 +39,7 @@ export function OutageCard({ outage }: { outage: OutageCardData }) {
   const status = computeOutageStatus(outage);
   const mins = durationMinutes(outage.startTime, outage.endTime);
   const tips = status === "scheduled" || status === "starting_soon" ? preparationTips(mins) : [];
+  const sourceMeta = getSourceMeta(outage.sourceUrl, outage.sourceType);
 
   return (
     <article className="flex overflow-hidden rounded-lg border border-line bg-white shadow-sm">
@@ -61,11 +52,23 @@ export function OutageCard({ outage }: { outage: OutageCardData }) {
             </h3>
             <p className="text-sm text-muted">{outage.title}</p>
           </div>
-          <span
-            className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-semibold uppercase tracking-wide ${statusColorClasses[status]}`}
-          >
-            {statusLabels[status]}
-          </span>
+          <div className="flex flex-col items-end gap-1">
+            <span
+              className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-semibold uppercase tracking-wide ${statusColorClasses[status]}`}
+            >
+              {statusLabels[status]}
+            </span>
+            <span
+              className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                sourceMeta.official
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+                  : "border-amber-300 bg-amber-50 text-amber-800"
+              }`}
+            >
+              {sourceMeta.official ? "✓ " : "⚠ "}
+              {sourceMeta.official ? sourceMeta.displayName : `Unverified — ${sourceMeta.displayName}`}
+            </span>
+          </div>
         </div>
 
         <div className="mt-3 flex items-baseline gap-2 tabular-nums-mono text-2xl font-semibold text-ink">
@@ -93,9 +96,7 @@ export function OutageCard({ outage }: { outage: OutageCardData }) {
           </div>
           <div>
             <dt className="text-xs uppercase tracking-wide text-muted">Source</dt>
-            <dd className="text-ink">
-              {sourceTypeLabels[outage.sourceType] ?? outage.sourceType}
-            </dd>
+            <dd className="text-ink">{sourceMeta.displayName}</dd>
           </div>
           <div>
             <dt className="text-xs uppercase tracking-wide text-muted">Last verified</dt>
