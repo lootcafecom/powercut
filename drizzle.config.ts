@@ -3,8 +3,8 @@ import type { Config } from "drizzle-kit";
 export default {
   schema: "./lib/db/schema.ts",
   out: "./lib/db/migrations",
-  dialect: "sqlite",
+  dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_FILE || "./powercut.db",
+    url: process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:5432/powercut",
   },
 } satisfies Config;

@@ -1,37 +1,37 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import fs from "fs";
+import postgres from "postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
 import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPath = process.env.DATABASE_FILE || path.join(process.cwd(), "powercut.db");
-const dbDir = path.dirname(dbPath);
 
-if (!fs.existsSync(dbDir)) {
-  console.log(`[bootstrap-db] Creating directory: ${dbDir}`);
-  fs.mkdirSync(dbDir, { recursive: true });
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  console.error(
+    "[bootstrap-db] DATABASE_URL is not set. Set it to your Postgres connection string."
+  );
+  process.exit(1);
 }
 
-console.log(`[bootstrap-db] Using database file: ${dbPath}`);
+console.log("[bootstrap-db] Connecting to Postgres...");
 
-const sqlite = new Database(dbPath);
-// See lib/db/index.ts for why this is DELETE and not WAL.
-sqlite.pragma("journal_mode = DELETE");
-sqlite.pragma("foreign_keys = ON");
-const db = drizzle(sqlite);
+const migrationClient = postgres(connectionString, { max: 1 });
+const migrationDb = drizzle(migrationClient);
 
-migrate(db, { migrationsFolder: path.join(__dirname, "..", "lib", "db", "migrations") });
+await migrate(migrationDb, {
+  migrationsFolder: path.join(__dirname, "..", "lib", "db", "migrations"),
+});
 console.log("[bootstrap-db] Migrations applied (or already up to date).");
+await migrationClient.end();
 
-const { count } = sqlite
-  .prepare("SELECT COUNT(*) as count FROM states")
-  .get();
+const sql = postgres(connectionString, { max: 1 });
+
+const [{ count }] = await sql`SELECT COUNT(*)::int as count FROM states`;
 
 if (count > 0) {
   console.log(`[bootstrap-db] Data already present (${count} states) — skipping seed.`);
-  sqlite.close();
+  await sql.end();
   process.exit(0);
 }
 
@@ -62,33 +62,27 @@ function dateOffset(daysFromToday) {
 
 const nowMs = Date.now();
 
-const insertState = sqlite.prepare(
-  "INSERT INTO states (name, code, slug) VALUES (?, ?, ?)"
-);
-const stateId = insertState.run("Karnataka", "KA", "karnataka").lastInsertRowid;
+const [{ id: stateId }] = await sql`
+  INSERT INTO states (name, code, slug) VALUES ('Karnataka', 'KA', 'karnataka')
+  RETURNING id
+`;
 
-const insertProvider = sqlite.prepare(
-  `INSERT INTO electricity_providers (name, short_name, slug, website, official_source_url, customer_care_phone, description)
-   VALUES (?, ?, ?, ?, ?, ?, ?)`
-);
-const providerId = insertProvider.run(
-  "Bangalore Electricity Supply Company",
-  "BESCOM",
-  "bescom",
-  "https://bescom.karnataka.gov.in",
-  "https://bescom.karnataka.gov.in/scheduled-outages",
-  "1912",
-  "Electricity distribution utility serving Bengaluru and surrounding districts."
-).lastInsertRowid;
+const [{ id: providerId }] = await sql`
+  INSERT INTO electricity_providers (name, short_name, slug, website, official_source_url, customer_care_phone, description)
+  VALUES (
+    'Bangalore Electricity Supply Company', 'BESCOM', 'bescom',
+    'https://bescom.karnataka.gov.in', 'https://bescom.karnataka.gov.in/scheduled-outages',
+    '1912', 'Electricity distribution utility serving Bengaluru and surrounding districts.'
+  )
+  RETURNING id
+`;
 
-const insertCity = sqlite.prepare(
-  "INSERT INTO cities (state_id, name, slug, latitude, longitude) VALUES (?, ?, ?, ?, ?)"
-);
-const cityId = insertCity.run(stateId, "Bengaluru", "bengaluru", 12.9716, 77.5946).lastInsertRowid;
+const [{ id: cityId }] = await sql`
+  INSERT INTO cities (state_id, name, slug, latitude, longitude)
+  VALUES (${stateId}, 'Bengaluru', 'bengaluru', 12.9716, 77.5946)
+  RETURNING id
+`;
 
-const insertLocality = sqlite.prepare(
-  "INSERT INTO localities (city_id, name, slug) VALUES (?, ?, ?)"
-);
 const localityIds = {};
 for (const name of [
   "Whitefield",
@@ -98,18 +92,13 @@ for (const name of [
   "Jayanagar",
   "Yelahanka",
 ]) {
-  const id = insertLocality.run(cityId, name, name.toLowerCase().replace(/\s+/g, "-")).lastInsertRowid;
+  const slug = name.toLowerCase().replace(/\s+/g, "-");
+  const [{ id }] = await sql`
+    INSERT INTO localities (city_id, name, slug) VALUES (${cityId}, ${name}, ${slug})
+    RETURNING id
+  `;
   localityIds[name] = id;
 }
-
-const insertOutage = sqlite.prepare(`
-  INSERT INTO power_outages (
-    state_id, provider_id, city_id, locality_id, title, description, outage_type, reason,
-    scheduled_date, start_time, end_time, actual_start_time, actual_end_time,
-    source_type, source_url, confidence_score, verification_status,
-    first_seen_at, published_at, last_verified_at
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-`);
 
 const rows = [
   {
@@ -217,29 +206,20 @@ const rows = [
 ];
 
 for (const r of rows) {
-  insertOutage.run(
-    stateId,
-    providerId,
-    cityId,
-    localityIds[r.locality],
-    r.title,
-    r.description,
-    r.outageType,
-    r.reason,
-    r.scheduledDate,
-    r.startTime,
-    r.endTime,
-    r.actualStart,
-    r.actualEnd,
-    r.sourceType,
-    r.sourceUrl,
-    r.confidence,
-    "published",
-    r.firstSeen,
-    r.firstSeen,
-    r.lastVerified
-  );
+  await sql`
+    INSERT INTO power_outages (
+      state_id, provider_id, city_id, locality_id, title, description, outage_type, reason,
+      scheduled_date, start_time, end_time, actual_start_time, actual_end_time,
+      source_type, source_url, confidence_score, verification_status,
+      first_seen_at, published_at, last_verified_at
+    ) VALUES (
+      ${stateId}, ${providerId}, ${cityId}, ${localityIds[r.locality]}, ${r.title}, ${r.description},
+      ${r.outageType}, ${r.reason}, ${r.scheduledDate}, ${r.startTime}, ${r.endTime},
+      ${r.actualStart}, ${r.actualEnd}, ${r.sourceType}, ${r.sourceUrl}, ${r.confidence},
+      'published', ${r.firstSeen}, ${r.firstSeen}, ${r.lastVerified}
+    )
+  `;
 }
 
 console.log(`[bootstrap-db] Seeded ${rows.length} demo outages for Bengaluru.`);
-sqlite.close();
+await sql.end();

@@ -1,34 +1,23 @@
 import { sql } from "drizzle-orm";
 import {
-  sqliteTable,
+  pgTable,
   text,
   integer,
+  serial,
   real,
-} from "drizzle-orm/sqlite-core";
-
-/**
- * NOTE ON DATABASE ENGINE
- * The master spec calls for PostgreSQL + Prisma. This sandbox environment's
- * network egress does not allow reaching Prisma's binary-engine CDN, so this
- * scaffold uses Drizzle ORM + SQLite (file-based, zero network dependency)
- * to stay fully functional here. The schema below is intentionally written
- * in a Postgres-portable style (no SQLite-only tricks) — swapping the driver
- * to `drizzle-orm/node-postgres` and changing column helpers
- * (sqliteTable -> pgTable, integer timestamps -> timestamp) is a mechanical,
- * low-risk migration when this moves to production. See README.md.
- */
+} from "drizzle-orm/pg-core";
 
 const timestamps = {
   createdAt: text("created_at")
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`now()::text`),
   updatedAt: text("updated_at")
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`now()::text`),
 };
 
-export const states = sqliteTable("states", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const states = pgTable("states", {
+  id: serial("id").primaryKey(),
   countrySlug: text("country_slug").notNull().default("india"),
   name: text("name").notNull(),
   code: text("code"),
@@ -37,8 +26,8 @@ export const states = sqliteTable("states", {
   ...timestamps,
 });
 
-export const districts = sqliteTable("districts", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const districts = pgTable("districts", {
+  id: serial("id").primaryKey(),
   stateId: integer("state_id")
     .notNull()
     .references(() => states.id),
@@ -48,8 +37,8 @@ export const districts = sqliteTable("districts", {
   ...timestamps,
 });
 
-export const electricityProviders = sqliteTable("electricity_providers", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const electricityProviders = pgTable("electricity_providers", {
+  id: serial("id").primaryKey(),
   name: text("name").notNull(),
   shortName: text("short_name").notNull(),
   slug: text("slug").notNull().unique(),
@@ -62,8 +51,8 @@ export const electricityProviders = sqliteTable("electricity_providers", {
   ...timestamps,
 });
 
-export const cities = sqliteTable("cities", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const cities = pgTable("cities", {
+  id: serial("id").primaryKey(),
   stateId: integer("state_id")
     .notNull()
     .references(() => states.id),
@@ -76,8 +65,8 @@ export const cities = sqliteTable("cities", {
   ...timestamps,
 });
 
-export const localities = sqliteTable("localities", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const localities = pgTable("localities", {
+  id: serial("id").primaryKey(),
   cityId: integer("city_id")
     .notNull()
     .references(() => cities.id),
@@ -91,9 +80,8 @@ export const localities = sqliteTable("localities", {
   ...timestamps,
 });
 
-// Many-to-many: which providers serve which geographic entities.
-export const providerServiceAreas = sqliteTable("provider_service_areas", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const providerServiceAreas = pgTable("provider_service_areas", {
+  id: serial("id").primaryKey(),
   providerId: integer("provider_id")
     .notNull()
     .references(() => electricityProviders.id),
@@ -133,8 +121,8 @@ export const sourceTypeValues = [
   "user_report",
 ] as const;
 
-export const powerOutages = sqliteTable("power_outages", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const powerOutages = pgTable("power_outages", {
+  id: serial("id").primaryKey(),
 
   stateId: integer("state_id")
     .notNull()
@@ -153,12 +141,9 @@ export const powerOutages = sqliteTable("power_outages", {
   outageType: text("outage_type").notNull().default("scheduled"),
   reason: text("reason"),
 
-  // Stored as ISO date/time strings, always interpreted in the
-  // city's/provider's timezone (see lib/timezone.ts) — never ambiguous
-  // local wall-clock strings without a zone anchor.
-  scheduledDate: text("scheduled_date").notNull(), // YYYY-MM-DD
-  startTime: text("start_time").notNull(), // ISO 8601 datetime, UTC
-  endTime: text("end_time").notNull(), // ISO 8601 datetime, UTC
+  scheduledDate: text("scheduled_date").notNull(),
+  startTime: text("start_time").notNull(),
+  endTime: text("end_time").notNull(),
   actualStartTime: text("actual_start_time"),
   actualEndTime: text("actual_end_time"),
 
@@ -167,11 +152,9 @@ export const powerOutages = sqliteTable("power_outages", {
   sourceDocument: text("source_document"),
 
   confidenceScore: integer("confidence_score").notNull().default(50),
-  verificationStatus: text("verification_status")
-    .notNull()
-    .default("draft"),
+  verificationStatus: text("verification_status").notNull().default("draft"),
 
-  firstSeenAt: text("first_seen_at").default(sql`CURRENT_TIMESTAMP`),
+  firstSeenAt: text("first_seen_at").default(sql`now()::text`),
   publishedAt: text("published_at"),
   lastVerifiedAt: text("last_verified_at"),
 
