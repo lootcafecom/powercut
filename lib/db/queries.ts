@@ -1,4 +1,4 @@
-import { and, eq, desc } from "drizzle-orm";
+import { and, eq, desc, gte } from "drizzle-orm";
 import { db } from "./index";
 import {
   cities,
@@ -7,6 +7,7 @@ import {
   electricityProviders,
   powerOutages,
   sourceDocuments,
+  userReports,
 } from "./schema";
 
 export async function getCityBySlug(stateSlug: string, citySlug: string) {
@@ -83,6 +84,53 @@ export async function getPendingReviewCount() {
     .from(powerOutages)
     .where(eq(powerOutages.verificationStatus, "pending_review"));
   return rows.length;
+}
+
+export async function getActiveReportSummaries(cityId: number, windowHours: number) {
+  const cutoff = new Date(Date.now() - windowHours * 60 * 60 * 1000).toISOString();
+  const rows = await db
+    .select({
+      localityId: userReports.localityId,
+      localityName: localities.name,
+      createdAt: userReports.createdAt,
+    })
+    .from(userReports)
+    .innerJoin(localities, eq(userReports.localityId, localities.id))
+    .where(and(eq(userReports.cityId, cityId), gte(userReports.createdAt, cutoff)));
+
+  const byLocality = new Map<
+    number,
+    { localityId: number; localityName: string; count: number; latestAt: string }
+  >();
+  for (const row of rows) {
+    const existing = byLocality.get(row.localityId);
+    if (existing) {
+      existing.count++;
+      if (row.createdAt > existing.latestAt) existing.latestAt = row.createdAt;
+    } else {
+      byLocality.set(row.localityId, {
+        localityId: row.localityId,
+        localityName: row.localityName,
+        count: 1,
+        latestAt: row.createdAt,
+      });
+    }
+  }
+  return Array.from(byLocality.values()).sort((a, b) => b.count - a.count);
+}
+
+export async function getRecentUserReports(limit = 50) {
+  return db
+    .select({
+      id: userReports.id,
+      localityName: localities.name,
+      description: userReports.description,
+      createdAt: userReports.createdAt,
+    })
+    .from(userReports)
+    .innerJoin(localities, eq(userReports.localityId, localities.id))
+    .orderBy(desc(userReports.createdAt))
+    .limit(limit);
 }
 
 export async function getAllStates() {

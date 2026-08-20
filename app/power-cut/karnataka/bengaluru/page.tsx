@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
-import { getCityBySlug, getOutagesForCity } from "@/lib/db/queries";
+import { getCityBySlug, getOutagesForCity, getActiveReportSummaries, getAllLocalities } from "@/lib/db/queries";
 import { computeOutageStatus } from "@/lib/outage-status";
 import { formatDateIST, isSameISTDate } from "@/lib/format";
 import { OutageTabs } from "@/components/outage/outage-tabs";
 import type { OutageCardData } from "@/components/outage/outage-card";
+import { CommunityReportsPanel } from "@/components/outage/community-reports-panel";
+import { ReportOutageForm } from "@/components/outage/report-outage-form";
+import { REPORT_ACTIVE_WINDOW_HOURS } from "@/lib/reports/tiers";
 import { siteConfig } from "@/lib/config/site";
 
 export const dynamic = "force-dynamic"; // status must always reflect "now"
@@ -27,6 +30,11 @@ export default async function BengaluruPowerCutPage() {
 
   const { city } = result;
   const rows = await getOutagesForCity(city.id);
+  const reportSummaries = await getActiveReportSummaries(city.id, REPORT_ACTIVE_WINDOW_HOURS);
+  const allLocalities = await getAllLocalities();
+  const cityLocalities = allLocalities
+    .filter((l) => l.cityId === city.id)
+    .map((l) => ({ id: l.id, name: l.name }));
 
   const cards: OutageCardData[] = rows.map(({ outage, locality, provider }) => ({
     id: outage.id,
@@ -105,6 +113,13 @@ export default async function BengaluruPowerCutPage() {
                 })
               : "—"}
           </span>
+        </div>
+      </div>
+
+      <div className="mt-6 flex flex-col gap-4">
+        <CommunityReportsPanel summaries={reportSummaries} />
+        <div className="flex justify-end">
+          <ReportOutageForm localities={cityLocalities} />
         </div>
       </div>
 

@@ -31,6 +31,12 @@ export default async function AdminOutagesPage() {
           </p>
         </div>
         <Link
+          href="/admin/reports"
+          className="rounded-md border border-line px-4 py-2 text-sm font-semibold uppercase tracking-wide text-ink hover:bg-paper-2"
+        >
+          Reports
+        </Link>
+        <Link
           href="/admin/sources"
           className="rounded-md border border-line px-4 py-2 text-sm font-semibold uppercase tracking-wide text-ink hover:bg-paper-2"
         >

@@ -82,6 +82,32 @@ env var to change it — do this before deploying anywhere real).
   BESCOM's own official site currently blocks automated access via
   robots.txt, so this couldn't be built against them directly (see below).
 
+## Crowd reports (spec section 40)
+
+`/power-cut/karnataka/bengaluru` now has a "Report a power cut" form and
+an aggregated community-reports panel, deliberately built as a **separate
+system from the sourced outage pipeline**:
+
+- `user_reports` is its own table — never a row in `power_outages`, never
+  given a `sourceType` or confidence score. It's an unverified crowd
+  signal, not sourced data, and the UI never lets those two things blur
+  together.
+- Tiers match the spec: 1 report → "Possible outage reported", 5+ →
+  "Multiple users reporting outage", 20+ → "Strong local outage signal".
+  See `lib/reports/tiers.ts`.
+- Reports older than `REPORT_ACTIVE_WINDOW_HOURS` (3, by default) stop
+  counting toward the current signal — old reports don't linger forever.
+- Anonymous, no login required, with lightweight abuse resistance: a
+  hashed IP + locality pair can't submit again for 30 minutes (see
+  `app/api/reports/route.ts`). The IP itself is never stored, only a
+  salted hash of it.
+- `/admin/reports` shows the raw underlying log behind the aggregated
+  public tiers.
+
+This exists specifically to cover the gap sourced data can't: unscheduled,
+unannounced outages that no official notice or secondary aggregator will
+ever mention.
+
 ## Source ingestion: OneIndia (secondary source)
 
 BESCOM's official Planned Outages page (`bescom.karnataka.gov.in`)

@@ -136,6 +136,25 @@ export const sourceDocuments = pgTable("source_documents", {
   recordsExtracted: integer("records_extracted").default(0),
 });
 
+// Crowd-sourced "power is out right now" signals. Deliberately a SEPARATE
+// table from power_outages, not a sourceType on it — these are unverified
+// user claims, never mixed into the confidence-scored sourced pipeline.
+// Aggregated counts are shown publicly, always labeled as user reports.
+export const userReports = pgTable("user_reports", {
+  id: serial("id").primaryKey(),
+  cityId: integer("city_id")
+    .notNull()
+    .references(() => cities.id),
+  localityId: integer("locality_id")
+    .notNull()
+    .references(() => localities.id),
+  description: text("description"),
+  // Hashed, not raw — used only for lightweight rate-limiting/spam
+  // resistance, never for identifying anyone.
+  reporterIpHash: text("reporter_ip_hash"),
+  createdAt: text("created_at").notNull().default(sql`now()::text`),
+});
+
 export const powerOutages = pgTable("power_outages", {
   id: serial("id").primaryKey(),
 
