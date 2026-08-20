@@ -23,7 +23,7 @@ export default async function BengaluruPowerCutPage() {
   if (!result) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 text-center">
-        <p className="text-muted">City not found. Run the database seed script.</p>
+        <p className="text-text-muted">City not found. Run the database seed script.</p>
       </div>
     );
   }
@@ -77,63 +77,65 @@ export default async function BengaluruPowerCutPage() {
     .reverse()[0];
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      {/* Status readout — mimics a substation display panel */}
-      <div className="rounded-lg border border-line bg-ink p-6 text-white sm:p-8">
-        <p className="text-xs uppercase tracking-widest text-white/50">
-          Karnataka · India
-        </p>
-        <h1 className="font-display mt-1 text-3xl font-bold uppercase tracking-wide sm:text-4xl">
-          Bengaluru Power Cut Today
-        </h1>
-        <p className="mt-1 text-white/70">{formatDateIST(now.toISOString())}</p>
+    <div className="bg-radial-glow min-h-screen">
+      <div className="mx-auto max-w-5xl px-4 py-8">
+        {/* Status readout */}
+        <div className="glow-blue rounded-xl border border-line-neon bg-bg-card p-6 sm:p-8">
+          <p className="text-xs uppercase tracking-widest text-text-muted">
+            Karnataka · India
+          </p>
+          <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+            Bengaluru Power Cut Today
+          </h1>
+          <p className="mt-1 text-text-muted">{formatDateIST(now.toISOString())}</p>
 
-        <div className="mt-5 flex flex-wrap gap-6">
-          <Stat label="Today's outages" value={today.length} />
-          <Stat label="Tomorrow's outages" value={tomorrow.length} />
-          <Stat
-            label="Ongoing right now"
-            value={ongoingCount}
-            accent={ongoingCount > 0}
-          />
+          <div className="mt-5 flex flex-wrap gap-6">
+            <Stat label="Today's outages" value={today.length} />
+            <Stat label="Tomorrow's outages" value={tomorrow.length} />
+            <Stat
+              label="Ongoing right now"
+              value={ongoingCount}
+              accent={ongoingCount > 0}
+            />
+          </div>
+
+          <div className="mt-5 flex items-center gap-2 text-xs tabular-nums-mono text-text-muted">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="pulse-dot absolute inline-flex h-full w-full rounded-full bg-green" />
+            </span>
+            <span>
+              Last checked:{" "}
+              {lastChecked
+                ? new Date(lastChecked).toLocaleString("en-IN", {
+                    timeZone: siteConfig.defaultTimezone,
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                  })
+                : "—"}
+            </span>
+          </div>
         </div>
 
-        <div className="mt-5 flex items-center gap-2 text-xs tabular-nums-mono text-white/60">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="pulse-dot absolute inline-flex h-full w-full rounded-full bg-emerald-400" />
-          </span>
-          <span>
-            Last checked:{" "}
-            {lastChecked
-              ? new Date(lastChecked).toLocaleString("en-IN", {
-                  timeZone: siteConfig.defaultTimezone,
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                })
-              : "—"}
-          </span>
+        <div className="mt-6 flex flex-col gap-4">
+          <CommunityReportsPanel summaries={reportSummaries} />
+          <div className="flex justify-end">
+            <ReportOutageForm localities={cityLocalities} />
+          </div>
         </div>
-      </div>
 
-      <div className="mt-6 flex flex-col gap-4">
-        <CommunityReportsPanel summaries={reportSummaries} />
-        <div className="flex justify-end">
-          <ReportOutageForm localities={cityLocalities} />
+        <div className="mt-8">
+          <OutageTabs today={today} tomorrow={tomorrow} upcoming={upcoming} history={history} />
         </div>
-      </div>
 
-      <div className="mt-8">
-        <OutageTabs today={today} tomorrow={tomorrow} upcoming={upcoming} history={history} />
-      </div>
-
-      <div className="mt-10 rounded-lg border border-line bg-white p-5 text-sm text-muted">
-        <p>
-          Outage information for Bengaluru is sourced from BESCOM&rsquo;s
-          official scheduled-outage notices and reviewed before publishing.
-          Entries awaiting verification are not shown here. If you notice an
-          unscheduled outage, you can report it from a locality page.
-        </p>
+        <div className="mt-10 rounded-xl border border-line-soft bg-bg-card p-5 text-sm text-text-muted">
+          <p>
+            Outage information for Bengaluru is sourced from BESCOM&rsquo;s
+            official scheduled-outage notices and secondary sources, and
+            labeled by source on every card. Community reports above are a
+            separate, unverified signal for outages nobody has announced.
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -151,13 +153,13 @@ function Stat({
   return (
     <div>
       <p
-        className={`tabular-nums-mono text-3xl font-semibold ${
-          accent ? "text-red-400" : "text-white"
+        className={`tabular-nums-mono text-3xl font-bold ${
+          accent ? "text-red" : "text-white"
         }`}
       >
         {value}
       </p>
-      <p className="text-xs uppercase tracking-wide text-white/50">{label}</p>
+      <p className="text-xs uppercase tracking-wide text-text-muted">{label}</p>
     </div>
   );
 }

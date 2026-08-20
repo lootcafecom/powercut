@@ -1,45 +1,70 @@
 @import "tailwindcss";
 
 /*
-  Design direction: "grid status console" — the site should read like an
-  instrument panel for the electricity grid, not a decorated consumer app.
-  Amber/black hazard-stripe accents are used once, sparingly, as the
-  signature element (the live sync strip). Content areas stay plain,
-  high-contrast and calm, because for this product data reliability is
-  the whole point — not the decoration.
+  Direction: dark futuristic electricity-monitoring theme, per brief.
+  Real content only — see README for what's real vs. roadmap on this site.
 
   Palette:
-    --color-ink        #12181F  headers / high-contrast text / console chrome
-    --color-paper      #F6F7F5  content background (cool, not the cream cliche)
-    --color-paper-2    #EFF1EE  secondary surface
-    --color-line       #D7DAD6  borders / dividers
-    --color-signal     #E8A33D  amber accent — scheduled / attention / CTA
-    --color-signal-ink #7A4B0F  amber text-on-light
-    --color-alert      #C1432E  ongoing outage / urgent
-    --color-ok         #3F9142  restored / confirmed-good
-    --color-muted      #5B6570  secondary text
+    --bg-deep    #020817  page background
+    --bg-panel   #06142D  section/panel background
+    --bg-card    #0A1F42  card surface
+    --line       rgba(0,168,255,.16)  neon-tinted borders
+    --line-soft  rgba(255,255,255,.08) neutral borders
+    --blue       #1687FF  primary electric blue
+    --blue-2     #00A8FF
+    --cyan       #00D9FF  secondary accent
+    --yellow     #FFD400  brand accent / CTA
+    --yellow-2   #FFC400
+    --purple     #8B5CFF  sparing secondary highlight
+    --red        #FF3B4A  ongoing outage
+    --orange     #FFB800  scheduled outage
+    --green      #19D66B  restored / good
+    --text       #F3F7FC  primary text on dark
+    --text-muted #90A3C7  secondary text on dark
 */
 
 :root {
-  --background: #f6f7f5;
-  --foreground: #12181f;
+  --background: #020817;
+  --foreground: #f3f7fc;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-bg-deep: #020817;
+  --color-bg-panel: #06142d;
+  --color-bg-card: #0a1f42;
+  --color-line: #d7dad6;
+  --color-line-neon: rgba(0, 168, 255, 0.16);
+  --color-line-soft: rgba(255, 255, 255, 0.08);
+
+  --color-blue: #1687ff;
+  --color-blue-2: #00a8ff;
+  --color-cyan: #00d9ff;
+  --color-yellow: #ffd400;
+  --color-yellow-2: #ffc400;
+  --color-purple: #8b5cff;
+  --color-red: #ff3b4a;
+  --color-orange: #ffb800;
+  --color-green: #19d66b;
+
+  --color-text: #f3f7fc;
+  --color-text-muted: #90a3c7;
+
+  /* Legacy tokens kept for the admin panel, which stays on its existing
+     light utility theme — this redesign is scoped to public-facing pages. */
   --color-ink: #12181f;
   --color-paper: #f6f7f5;
   --color-paper-2: #eff1ee;
-  --color-line: #d7dad6;
+  --color-line-legacy: #d7dad6;
   --color-signal: #e8a33d;
   --color-signal-ink: #7a4b0f;
   --color-alert: #c1432e;
   --color-ok: #3f9142;
   --color-muted: #5b6570;
 
-  --font-sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-display: "Arial Narrow", "Helvetica Neue Condensed", "Segoe UI", sans-serif;
+  --font-sans: "Segoe UI", -apple-system, system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", "IBM Plex Mono", Menlo, Consolas, monospace;
 }
 
@@ -49,33 +74,58 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Condensed, tracked-out uppercase treatment stands in for a bespoke
-   display face — weight/tracking/case carry the "signage" personality
-   since no external font files are available in this environment. */
-.font-display {
-  font-family: var(--font-display);
-  font-stretch: condensed;
-  letter-spacing: -0.01em;
-}
-
 .tabular-nums-mono {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
-.hazard-corner {
-  background: repeating-linear-gradient(
-    135deg,
-    var(--color-signal),
-    var(--color-signal) 6px,
-    var(--color-ink) 6px,
-    var(--color-ink) 12px
-  );
+/* Premium, restrained glow utilities — used deliberately, not everywhere. */
+.glow-blue {
+  box-shadow:
+    0 0 24px rgba(22, 135, 255, 0.18),
+    inset 0 0 24px rgba(22, 135, 255, 0.04);
+}
+.glow-yellow {
+  box-shadow:
+    0 0 24px rgba(255, 212, 0, 0.18),
+    inset 0 0 24px rgba(255, 212, 0, 0.03);
+}
+.glow-red {
+  box-shadow: 0 0 20px rgba(255, 59, 74, 0.22);
+}
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(0, 217, 255, 0.18);
+}
+.text-glow-yellow {
+  filter: drop-shadow(0 0 10px rgba(255, 212, 0, 0.55));
+}
+.icon-glow-blue {
+  filter: drop-shadow(0 0 6px rgba(22, 135, 255, 0.7));
+}
+
+.bg-radial-glow {
+  background:
+    radial-gradient(60% 50% at 15% 0%, rgba(22, 135, 255, 0.16) 0%, transparent 60%),
+    radial-gradient(45% 40% at 85% 10%, rgba(139, 92, 255, 0.10) 0%, transparent 60%),
+    radial-gradient(50% 40% at 50% 100%, rgba(0, 217, 255, 0.08) 0%, transparent 60%);
+}
+
+.grid-lines {
+  background-image:
+    linear-gradient(rgba(22, 135, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22, 135, 255, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .pulse-dot {
     animation: pulse-dot 2s ease-in-out infinite;
+  }
+  .hover-lift {
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-3px);
   }
 }
 @keyframes pulse-dot {

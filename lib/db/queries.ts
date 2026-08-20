@@ -133,6 +133,48 @@ export async function getRecentUserReports(limit = 50) {
     .limit(limit);
 }
 
+export async function getHomepageStats() {
+  const [publishedRows, localityRows, cityRows] = await Promise.all([
+    db
+      .select({
+        id: powerOutages.id,
+        scheduledDate: powerOutages.scheduledDate,
+        startTime: powerOutages.startTime,
+        endTime: powerOutages.endTime,
+        verificationStatus: powerOutages.verificationStatus,
+      })
+      .from(powerOutages)
+      .where(eq(powerOutages.verificationStatus, "published")),
+    db.select({ id: localities.id }).from(localities),
+    db.select({ id: cities.id }).from(cities),
+  ]);
+
+  const now = Date.now();
+  const todayCount = publishedRows.filter((r) => {
+    const start = new Date(r.startTime);
+    const today = new Date();
+    return (
+      start.getUTCFullYear() === today.getUTCFullYear() &&
+      start.getUTCMonth() === today.getUTCMonth() &&
+      start.getUTCDate() === today.getUTCDate()
+    );
+  }).length;
+
+  const ongoingCount = publishedRows.filter((r) => {
+    const start = new Date(r.startTime).getTime();
+    const end = new Date(r.endTime).getTime();
+    return now >= start && now < end;
+  }).length;
+
+  return {
+    totalPublished: publishedRows.length,
+    todayCount,
+    ongoingCount,
+    localitiesCovered: localityRows.length,
+    citiesCovered: cityRows.length,
+  };
+}
+
 export async function getAllStates() {
   return db.select().from(states);
 }

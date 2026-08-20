@@ -49,7 +49,7 @@ export function ReportOutageForm({ localities }: { localities: Locality[] }) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="rounded-md border border-alert/40 bg-alert/5 px-4 py-2 text-sm font-semibold uppercase tracking-wide text-alert hover:bg-alert/10"
+        className="glow-red rounded-md border border-red/40 bg-red/10 px-4 py-2 text-sm font-semibold uppercase tracking-wide text-red hover:bg-red/20"
       >
         Report a power cut
       </button>
@@ -58,9 +58,9 @@ export function ReportOutageForm({ localities }: { localities: Locality[] }) {
 
   if (status === "done") {
     return (
-      <div className="rounded-md border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-800">
+      <div className="rounded-md border border-green/30 bg-green/10 p-4 text-sm text-green">
         Thanks — your report has been added. It&rsquo;ll show up in the
-        community reports below.
+        community reports above.
       </div>
     );
   }
@@ -68,12 +68,12 @@ export function ReportOutageForm({ localities }: { localities: Locality[] }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-md border border-line bg-white p-4"
+      className="w-full rounded-md border border-line-soft bg-bg-card p-4 sm:w-auto"
     >
-      <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+      <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
         Report a power cut
       </p>
-      <p className="mt-1 text-xs text-muted">
+      <p className="mt-1 text-xs text-text-muted">
         This is a crowd signal, not an official report — used to flag
         possible unscheduled outages nobody has announced yet.
       </p>
@@ -82,7 +82,7 @@ export function ReportOutageForm({ localities }: { localities: Locality[] }) {
           value={localityId}
           onChange={(e) => setLocalityId(e.target.value)}
           required
-          className="flex-1 rounded-md border border-line px-3 py-2 text-sm focus:border-signal focus:outline-none"
+          className="flex-1 rounded-md border border-line-soft bg-bg-panel px-3 py-2 text-sm text-white focus:border-blue focus:outline-none"
         >
           <option value="">Select your locality</option>
           {localities.map((l) => (
@@ -97,22 +97,22 @@ export function ReportOutageForm({ localities }: { localities: Locality[] }) {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Optional note"
           maxLength={300}
-          className="flex-1 rounded-md border border-line px-3 py-2 text-sm focus:border-signal focus:outline-none"
+          className="flex-1 rounded-md border border-line-soft bg-bg-panel px-3 py-2 text-sm text-white placeholder:text-text-muted focus:border-blue focus:outline-none"
         />
       </div>
-      {errorMsg && <p className="mt-2 text-xs text-alert">{errorMsg}</p>}
+      {errorMsg && <p className="mt-2 text-xs text-red">{errorMsg}</p>}
       <div className="mt-3 flex gap-2">
         <button
           type="submit"
           disabled={status === "pending" || !localityId}
-          className="rounded-md bg-alert px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white hover:bg-alert/90 disabled:opacity-50"
+          className="glow-red rounded-md bg-red px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white hover:brightness-90 disabled:opacity-50"
         >
           {status === "pending" ? "Submitting…" : "Submit report"}
         </button>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="rounded-md px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted hover:text-ink"
+          className="rounded-md px-4 py-2 text-xs font-semibold uppercase tracking-wide text-text-muted hover:text-white"
         >
           Cancel
         </button>

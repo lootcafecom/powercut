@@ -3,10 +3,11 @@
  * Change branding/defaults here — never hardcode brand strings elsewhere.
  */
 export const siteConfig = {
-  name: "PowerCut",
-  tagline: "Power Cut Today? Check Before It Happens.",
+  name: "PowerCut India",
+  shortName: "PowerCut",
+  tagline: "Stay Ahead. Stay Powered.",
   description:
-    "Find scheduled and reported electricity outages in your city and locality.",
+    "Real-time and scheduled power cut information across India. Plan better. Stay prepared.",
   defaultCountry: "India",
   defaultCountrySlug: "india",
   defaultTimezone: "Asia/Kolkata",
@@ -16,7 +17,7 @@ export const siteConfig = {
     facebook: "",
   },
   seo: {
-    defaultTitleSuffix: " | PowerCut",
+    defaultTitleSuffix: " | PowerCut India",
     defaultOgImage: "/og-default.png",
   },
 } as const;
