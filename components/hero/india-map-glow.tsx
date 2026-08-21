@@ -1,24 +1,46 @@
 interface IndiaMapProps {
   className?: string;
-  /** Named cities to render as glowing nodes. Only Bengaluru is "live" today. */
   highlightBengaluru?: boolean;
+  /** Real ongoing-outage count to show on Bengaluru's node, if any. */
+  bengaluruCount?: number;
 }
 
-// Rough node positions on the 0-400 x 0-500 viewBox, positioned to roughly
-// correspond to real relative locations without claiming survey accuracy.
-const CITY_NODES = [
-  { name: "Delhi", x: 170, y: 90, live: false },
-  { name: "Mumbai", x: 120, y: 260, live: false },
-  { name: "Kolkata", x: 300, y: 190, live: false },
-  { name: "Hyderabad", x: 190, y: 300, live: false },
-  { name: "Chennai", x: 220, y: 380, live: false },
-  { name: "Bengaluru", x: 185, y: 355, live: true },
+// Faceted/low-poly India outline — straight segments between anchor points
+// rather than smooth cartographic curves. This is a deliberate stylistic
+// choice (fits a "circuit board" electric-grid read) as well as a
+// practical one: it's far easier to keep a hand-authored polygon
+// non-self-intersecting and recognizable than to hand-tune smooth bezier
+// curves without being able to render a preview.
+const OUTLINE_POINTS: [number, number][] = [
+  [160, 20], [210, 15], [250, 30], [270, 50], // north border into NE neck
+  [330, 60], [350, 90], [320, 115], [300, 105], // NE states bulge (Assam/Arunachal)
+  [310, 150], [290, 200], [265, 260], [235, 340], // east coast tapering down
+  [205, 430], [190, 500], // Kanyakumari — southern tip
+  [165, 420], [145, 340], [120, 280], // west coast going back up (Kerala/Karnataka/Konkan)
+  [70, 260], [100, 220], // Gujarat / Kathiawar bulge out west, then Kutch back in
+  [90, 170], [110, 110], [130, 60], // Rajasthan / Punjab back up
 ];
 
-export function IndiaMapGlow({ className, highlightBengaluru = true }: IndiaMapProps) {
+const CITY_NODES = [
+  { name: "Delhi", x: 190, y: 110, live: false },
+  { name: "Mumbai", x: 140, y: 300, live: false },
+  { name: "Kolkata", x: 295, y: 165, live: false },
+  { name: "Hyderabad", x: 230, y: 320, live: false },
+  { name: "Chennai", x: 218, y: 378, live: false },
+  { name: "Bengaluru", x: 190, y: 380, live: true },
+];
+
+export function IndiaMapGlow({
+  className,
+  highlightBengaluru = true,
+  bengaluruCount,
+}: IndiaMapProps) {
+  const pathData =
+    "M" + OUTLINE_POINTS.map(([x, y]) => `${x},${y}`).join(" L ") + " Z";
+
   return (
     <svg
-      viewBox="0 0 400 500"
+      viewBox="0 0 400 520"
       className={className}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -29,7 +51,7 @@ export function IndiaMapGlow({ className, highlightBengaluru = true }: IndiaMapP
           <stop offset="100%" stopColor="#1687FF" />
         </linearGradient>
         <filter id="india-glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="6" result="blur" />
+          <feGaussianBlur stdDeviation="5" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
@@ -37,39 +59,54 @@ export function IndiaMapGlow({ className, highlightBengaluru = true }: IndiaMapP
         </filter>
       </defs>
 
-      {/* Stylized landmass outline */}
       <path
-        d="M130,20 C180,10 260,25 300,60 C340,90 365,120 355,150
-           C345,175 320,175 300,160 C320,200 310,240 290,270
-           C270,310 250,350 235,400 C228,430 222,455 210,478
-           C200,455 195,430 188,405 C175,365 155,335 165,300
-           C140,320 120,300 115,270 C105,240 115,210 100,190
-           C85,175 80,150 95,130 C85,110 95,85 115,70
-           C105,50 115,30 130,20 Z"
+        d={pathData}
         stroke="url(#india-outline)"
         strokeWidth="2"
-        fill="rgba(22,135,255,0.04)"
+        strokeLinejoin="round"
+        fill="rgba(22,135,255,0.05)"
         filter="url(#india-glow)"
       />
 
-      {/* City nodes */}
       {CITY_NODES.map((node) => {
         const isLive = highlightBengaluru && node.live;
         return (
           <g key={node.name}>
-            <circle
-              cx={node.x}
-              cy={node.y}
-              r={isLive ? 7 : 3.5}
-              fill={isLive ? "#FFD400" : "#1687FF"}
-              opacity={isLive ? 1 : 0.45}
-              filter="url(#india-glow)"
-            />
+            {isLive && bengaluruCount !== undefined && bengaluruCount > 0 ? (
+              <>
+                <circle
+                  cx={node.x}
+                  cy={node.y}
+                  r="16"
+                  fill="#FF3B4A"
+                  filter="url(#india-glow)"
+                />
+                <text
+                  x={node.x}
+                  y={node.y + 5}
+                  textAnchor="middle"
+                  fontSize="15"
+                  fontWeight="700"
+                  fill="#ffffff"
+                >
+                  {bengaluruCount}
+                </text>
+              </>
+            ) : (
+              <circle
+                cx={node.x}
+                cy={node.y}
+                r={isLive ? 7 : 3.5}
+                fill={isLive ? "#FFD400" : "#1687FF"}
+                opacity={isLive ? 1 : 0.45}
+                filter="url(#india-glow)"
+              />
+            )}
             {isLive && (
               <circle
                 cx={node.x}
                 cy={node.y}
-                r="14"
+                r={bengaluruCount ? "22" : "14"}
                 fill="none"
                 stroke="#FFD400"
                 strokeWidth="1.5"
@@ -82,7 +119,7 @@ export function IndiaMapGlow({ className, highlightBengaluru = true }: IndiaMapP
 
       {/* Central lightning bolt */}
       <path
-        d="M212,180 L182,240 L204,240 L188,300 L232,225 L208,225 Z"
+        d="M212,190 L182,250 L204,250 L188,310 L232,235 L208,235 Z"
         fill="#FFD400"
         filter="url(#india-glow)"
       />

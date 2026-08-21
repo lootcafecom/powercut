@@ -18,15 +18,22 @@ import { IndiaMapGlow } from "@/components/hero/india-map-glow";
 
 export const dynamic = "force-dynamic";
 
-const statusDot: Record<string, string> = {
-  ongoing: "bg-red text-red",
-  scheduled: "bg-orange text-orange",
-  starting_soon: "bg-orange text-orange",
-  scheduled_window_ended: "bg-text-muted text-text-muted",
-  restored: "bg-green text-green",
-  cancelled: "bg-text-muted text-text-muted",
-  unknown: "bg-text-muted text-text-muted",
+const statusIconBg: Record<string, string> = {
+  ongoing: "bg-red/15 text-red",
+  scheduled: "bg-orange/15 text-orange",
+  starting_soon: "bg-orange/15 text-orange",
+  scheduled_window_ended: "bg-white/10 text-text-muted",
+  restored: "bg-green/15 text-green",
+  cancelled: "bg-white/10 text-text-muted",
+  unknown: "bg-white/10 text-text-muted",
 };
+
+function StatusRowIcon({ status }: { status: string }) {
+  const cls = "h-4 w-4";
+  if (status === "ongoing") return <WarningIcon className={cls} />;
+  if (status === "restored") return <ShieldIcon className={cls} />;
+  return <CalendarIcon className={cls} />;
+}
 
 export default async function HomePage() {
   const stats = await getHomepageStats();
@@ -50,7 +57,24 @@ export default async function HomePage() {
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-line-soft">
         <div className="grid-lines pointer-events-none absolute inset-0 opacity-40" />
-        <div className="relative mx-auto grid max-w-[1500px] grid-cols-1 items-center gap-10 px-4 py-16 lg:grid-cols-2 lg:py-24">
+        {/* Skyline silhouette + glow streak, for atmosphere behind the map */}
+        <svg
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-40 w-full opacity-60"
+          viewBox="0 0 1500 160"
+          preserveAspectRatio="none"
+          fill="none"
+        >
+          <rect x="0" y="90" width="60" height="70" fill="#06142D" />
+          <rect x="70" y="60" width="45" height="100" fill="#06142D" />
+          <rect x="125" y="100" width="55" height="60" fill="#06142D" />
+          <rect x="1250" y="70" width="50" height="90" fill="#06142D" />
+          <rect x="1310" y="40" width="40" height="120" fill="#06142D" />
+          <rect x="1360" y="95" width="60" height="65" fill="#06142D" />
+          <line x1="1420" y1="10" x2="1420" y2="160" stroke="#1687FF" strokeOpacity="0.3" strokeWidth="2" />
+          <line x1="1390" y1="35" x2="1450" y2="35" stroke="#1687FF" strokeOpacity="0.3" strokeWidth="2" />
+          <line x1="1400" y1="60" x2="1440" y2="60" stroke="#1687FF" strokeOpacity="0.3" strokeWidth="2" />
+        </svg>
+        <div className="relative mx-auto grid max-w-[1500px] grid-cols-1 items-start gap-10 px-4 py-16 lg:grid-cols-2 lg:py-20">
           <div>
             <h1 className="text-5xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-6xl">
               Stay Ahead.
@@ -102,8 +126,8 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-            <IndiaMapGlow className="h-auto w-full" />
+          <div className="relative mx-auto w-full max-w-[420px]">
+            <IndiaMapGlow className="h-auto w-full" bengaluruCount={stats.ongoingCount} />
           </div>
         </div>
       </section>
@@ -176,20 +200,27 @@ export default async function HomePage() {
               >
                 <div className="flex items-center gap-3">
                   <span
-                    className={`relative flex h-2.5 w-2.5 shrink-0 rounded-full ${statusDot[row.status]?.split(" ")[0]}`}
-                  />
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${statusIconBg[row.status]}`}
+                  >
+                    <StatusRowIcon status={row.status} />
+                  </span>
                   <div>
                     <p className="text-sm font-semibold text-white">{row.locality}</p>
                     <p className="text-xs text-text-muted">{row.provider}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className={`text-xs font-semibold ${statusDot[row.status]?.split(" ")[1]}`}>
-                    {statusLabels[row.status]}
-                  </p>
-                  <p className="tabular-nums-mono text-xs text-text-muted">
-                    {formatTimeIST(row.startTime)}–{formatTimeIST(row.endTime)}
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <p
+                      className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${statusIconBg[row.status]}`}
+                    >
+                      {statusLabels[row.status]}
+                    </p>
+                    <p className="tabular-nums-mono mt-0.5 text-xs text-text-muted">
+                      {formatTimeIST(row.startTime)}–{formatTimeIST(row.endTime)}
+                    </p>
+                  </div>
+                  <ChevronRightIcon className="h-4 w-4 shrink-0 text-text-muted" />
                 </div>
               </div>
             ))}
@@ -217,7 +248,7 @@ export default async function HomePage() {
           </div>
 
           <div className="mt-5 flex items-center justify-center rounded-lg border border-line-soft bg-bg-panel p-6">
-            <IndiaMapGlow className="h-72 w-auto" />
+            <IndiaMapGlow className="h-72 w-auto" bengaluruCount={stats.ongoingCount} />
           </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-text-muted">
