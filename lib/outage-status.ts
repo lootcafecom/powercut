@@ -81,13 +81,13 @@ export const statusDescriptions: Record<OutageStatus, string> = {
   unknown: "We don't have enough reliable information to determine status.",
 };
 
-/** Tailwind color tokens per status, used by badges/cards (dark theme). */
+/** Bold solid-color status classes (dark theme) — matches the homepage's boosted contrast. */
 export const statusColorClasses: Record<OutageStatus, string> = {
-  cancelled: "bg-white/5 text-text-muted border-line-soft",
-  scheduled: "bg-orange/15 text-orange border-orange/30",
-  starting_soon: "bg-orange/20 text-orange border-orange/40",
-  ongoing: "bg-red/15 text-red border-red/30",
-  scheduled_window_ended: "bg-white/5 text-text-muted border-line-soft",
-  restored: "bg-green/15 text-green border-green/30",
-  unknown: "bg-white/5 text-text-muted border-line-soft",
+  cancelled: "bg-white/15 text-white border-transparent",
+  scheduled: "bg-orange text-bg-deep border-transparent",
+  starting_soon: "bg-orange text-bg-deep border-transparent",
+  ongoing: "bg-red text-white border-transparent",
+  scheduled_window_ended: "bg-white/15 text-white border-transparent",
+  restored: "bg-green text-bg-deep border-transparent",
+  unknown: "bg-white/15 text-white border-transparent",
 };

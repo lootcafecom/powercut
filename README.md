@@ -107,6 +107,37 @@ This keeps the exact visual direction requested while not undermining
 the "data reliability over visual design" principle this whole project
 is built around.
 
+## Interactive map (Leaflet + OpenStreetMap)
+
+Two real maps, not decorative ones:
+
+- **Homepage** (`app/page.tsx`) — India-zoom map. Bengaluru gets a real
+  marker colored by actual live status (red=ongoing, orange=scheduled,
+  blue=normal), clickable through to the city page. Five other major
+  cities show as dim "not covered yet" markers at their real coordinates
+  — real locations, honestly labeled as uncovered, never fake outage data.
+- **Bengaluru page** — city-zoom map with one marker per locality,
+  colored by that locality's most urgent current outage status.
+
+Implementation notes:
+- `react-leaflet` + `leaflet`, both pure JS — no native dependencies, so
+  this can't hit the class of native-binary crash the SQLite driver did
+  earlier in this project.
+- Leaflet touches `window`/DOM directly and breaks under SSR, so the map
+  component is dynamically imported with `ssr: false`
+  (`components/map/map-loader.tsx`). The server-rendered HTML shows a
+  "Loading map…" placeholder; the actual map only mounts client-side.
+  This is expected — don't "fix" it by removing the dynamic import.
+- Markers use custom `L.divIcon` colored circles instead of Leaflet's
+  default marker images, which avoids a well-known bundler/asset-path
+  breakage with Leaflet's default icons in Next.js.
+- Tiles are CartoDB's free dark basemap (matches the site's dark theme),
+  correctly attributed to both OpenStreetMap and CARTO per their terms.
+- Locality coordinates (`lib/db/schema.ts` already had the columns) are
+  populated in `scripts/bootstrap-db.mjs` with real public coordinates
+  for each Bengaluru locality. There's no admin UI yet for editing
+  locality coordinates — that requires direct DB access for now.
+
 ## Next slice candidates
 
 - Wire a second city (e.g. Chennai/TANGEDCO) to prove the multi-provider,

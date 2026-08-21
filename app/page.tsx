@@ -15,17 +15,28 @@ import {
   ChevronRightIcon,
 } from "@/components/icons";
 import { IndiaMapGlow } from "@/components/hero/india-map-glow";
+import { MapLoader, type MapMarker } from "@/components/map/map-loader";
 
 export const dynamic = "force-dynamic";
 
 const statusIconBg: Record<string, string> = {
-  ongoing: "bg-red/15 text-red",
-  scheduled: "bg-orange/15 text-orange",
-  starting_soon: "bg-orange/15 text-orange",
-  scheduled_window_ended: "bg-white/10 text-text-muted",
-  restored: "bg-green/15 text-green",
-  cancelled: "bg-white/10 text-text-muted",
-  unknown: "bg-white/10 text-text-muted",
+  ongoing: "bg-red text-white",
+  scheduled: "bg-orange text-bg-deep",
+  starting_soon: "bg-orange text-bg-deep",
+  scheduled_window_ended: "bg-white/15 text-white",
+  restored: "bg-green text-bg-deep",
+  cancelled: "bg-white/15 text-white",
+  unknown: "bg-white/15 text-white",
+};
+
+const statusIconCircle: Record<string, string> = {
+  ongoing: "bg-red text-white",
+  scheduled: "bg-orange text-bg-deep",
+  starting_soon: "bg-orange text-bg-deep",
+  scheduled_window_ended: "bg-white/20 text-white",
+  restored: "bg-green text-bg-deep",
+  cancelled: "bg-white/20 text-white",
+  unknown: "bg-white/20 text-white",
 };
 
 function StatusRowIcon({ status }: { status: string }) {
@@ -52,11 +63,52 @@ export default async function HomePage() {
     .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
     .slice(0, 5);
 
+  const bengaluruMarkerStatus: MapMarker["status"] =
+    stats.ongoingCount > 0 ? "ongoing" : stats.todayCount > 0 ? "scheduled" : "normal";
+
+  const indiaMarkers: MapMarker[] = [
+    {
+      id: "bengaluru",
+      lat: 12.9716,
+      lng: 77.5946,
+      label: "Bengaluru",
+      status: bengaluruMarkerStatus,
+      popupContent: `${stats.todayCount} outage(s) today, ${stats.ongoingCount} ongoing`,
+      href: "/power-cut/karnataka/bengaluru",
+    },
+    { id: "delhi", lat: 28.6139, lng: 77.209, label: "Delhi", status: "muted", popupContent: "Not covered yet" },
+    { id: "mumbai", lat: 19.076, lng: 72.8777, label: "Mumbai", status: "muted", popupContent: "Not covered yet" },
+    { id: "kolkata", lat: 22.5726, lng: 88.3639, label: "Kolkata", status: "muted", popupContent: "Not covered yet" },
+    { id: "hyderabad", lat: 17.385, lng: 78.4867, label: "Hyderabad", status: "muted", popupContent: "Not covered yet" },
+    { id: "chennai", lat: 13.0827, lng: 80.2707, label: "Chennai", status: "muted", popupContent: "Not covered yet" },
+  ];
+
   return (
     <div className="bg-radial-glow">
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-line-soft">
         <div className="grid-lines pointer-events-none absolute inset-0 opacity-40" />
+        {/* Diagonal lightning streak for atmosphere, top-right corner */}
+        <svg
+          className="pointer-events-none absolute -right-10 -top-10 h-64 w-64 opacity-50 lg:h-96 lg:w-96"
+          viewBox="0 0 300 300"
+          fill="none"
+        >
+          <path
+            d="M40,10 L180,90 L120,110 L260,220"
+            stroke="#00D9FF"
+            strokeWidth="2"
+            strokeLinecap="round"
+            opacity="0.7"
+          />
+          <path
+            d="M60,40 L200,120"
+            stroke="#1687FF"
+            strokeWidth="1"
+            strokeLinecap="round"
+            opacity="0.4"
+          />
+        </svg>
         {/* Skyline silhouette + glow streak, for atmosphere behind the map */}
         <svg
           className="pointer-events-none absolute inset-x-0 bottom-0 h-40 w-full opacity-60"
@@ -141,7 +193,7 @@ export default async function HomePage() {
             label="Power Cuts Today"
             sub="Bengaluru"
             glow="glow-blue"
-            iconWrap="bg-blue/15 text-blue-2"
+            iconWrap="bg-blue text-white"
           />
           <StatCard
             icon={<ClockIcon className="h-5 w-5" />}
@@ -149,7 +201,7 @@ export default async function HomePage() {
             label="Total Tracked"
             sub="Since launch"
             glow="glow-cyan"
-            iconWrap="bg-cyan/15 text-cyan"
+            iconWrap="bg-cyan text-bg-deep"
           />
           <StatCard
             icon={<WarningIcon className="h-5 w-5" />}
@@ -157,7 +209,7 @@ export default async function HomePage() {
             label="Ongoing Right Now"
             sub="Bengaluru"
             glow="glow-red"
-            iconWrap="bg-orange/15 text-orange"
+            iconWrap="bg-orange text-bg-deep"
           />
           <StatCard
             icon={<LocationIcon className="h-5 w-5" />}
@@ -165,7 +217,7 @@ export default async function HomePage() {
             label="Localities Covered"
             sub="Bengaluru"
             glow="glow-blue"
-            iconWrap="bg-purple/15 text-purple"
+            iconWrap="bg-purple text-white"
           />
         </div>
       </section>
@@ -200,7 +252,7 @@ export default async function HomePage() {
               >
                 <div className="flex items-center gap-3">
                   <span
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${statusIconBg[row.status]}`}
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${statusIconCircle[row.status]}`}
                   >
                     <StatusRowIcon status={row.status} />
                   </span>
@@ -212,11 +264,11 @@ export default async function HomePage() {
                 <div className="flex items-center gap-3">
                   <div className="text-right">
                     <p
-                      className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${statusIconBg[row.status]}`}
+                      className={`inline-block rounded-full px-2.5 py-1 text-xs font-bold ${statusIconBg[row.status]}`}
                     >
                       {statusLabels[row.status]}
                     </p>
-                    <p className="tabular-nums-mono mt-0.5 text-xs text-text-muted">
+                    <p className="tabular-nums-mono mt-1 text-xs text-text-muted">
                       {formatTimeIST(row.startTime)}–{formatTimeIST(row.endTime)}
                     </p>
                   </div>
@@ -242,18 +294,22 @@ export default async function HomePage() {
               <LightningIcon className="h-5 w-5 text-yellow-2" filled />
               Live Outage Map
             </h2>
-            <span className="text-sm text-text-muted/50" title="Coming soon">
-              View Full Map →
-            </span>
           </div>
 
-          <div className="mt-5 flex items-center justify-center rounded-lg border border-line-soft bg-bg-panel p-6">
-            <IndiaMapGlow className="h-72 w-auto" bengaluruCount={stats.ongoingCount} />
+          <div className="mt-5 overflow-hidden rounded-lg border border-line-soft">
+            <MapLoader
+              center={[22.0, 79.0]}
+              zoom={4}
+              markers={indiaMarkers}
+              heightClassName="h-80"
+            />
           </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-text-muted">
-            <LegendDot color="bg-yellow" label="Live (Bengaluru)" />
-            <LegendDot color="bg-blue" label="Coming soon" muted />
+            <LegendDot color="bg-red" label="Ongoing" />
+            <LegendDot color="bg-orange" label="Scheduled" />
+            <LegendDot color="bg-blue" label="Normal" />
+            <LegendDot color="bg-[#3A4A66]" label="Not covered yet" muted />
           </div>
         </div>
       </section>
@@ -282,6 +338,31 @@ export default async function HomePage() {
             >
               Coming Soon
             </button>
+          </div>
+        </div>
+      </section>
+
+      {/* App — honest "coming soon", not a fake download banner */}
+      <section className="mx-auto max-w-[1500px] px-4 py-6">
+        <div className="glow-blue relative overflow-hidden rounded-xl border border-line-neon bg-bg-card p-8 sm:p-10">
+          <div className="grid-lines pointer-events-none absolute inset-0 opacity-20" />
+          <div className="relative flex flex-col items-center gap-6 text-center sm:flex-row sm:text-left">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border border-yellow/30 bg-yellow/10">
+              <LightningIcon className="h-9 w-9 text-yellow-2 icon-glow-blue" filled />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-white">
+                Carry {siteConfig.name} in Your Pocket
+              </h2>
+              <p className="mt-1 text-sm text-text-muted">
+                A mobile app is on the roadmap, not built yet. When it
+                ships, it&rsquo;ll show up here — no download links exist
+                today, so we won&rsquo;t pretend otherwise.
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full border border-yellow/30 bg-yellow/10 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-yellow">
+              Coming Soon
+            </span>
           </div>
         </div>
       </section>

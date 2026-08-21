@@ -8,6 +8,7 @@ import { CommunityReportsPanel } from "@/components/outage/community-reports-pan
 import { ReportOutageForm } from "@/components/outage/report-outage-form";
 import { REPORT_ACTIVE_WINDOW_HOURS } from "@/lib/reports/tiers";
 import { siteConfig } from "@/lib/config/site";
+import { MapLoader, type MapMarker } from "@/components/map/map-loader";
 
 export const dynamic = "force-dynamic"; // status must always reflect "now"
 
@@ -32,9 +33,43 @@ export default async function BengaluruPowerCutPage() {
   const rows = await getOutagesForCity(city.id);
   const reportSummaries = await getActiveReportSummaries(city.id, REPORT_ACTIVE_WINDOW_HOURS);
   const allLocalities = await getAllLocalities();
-  const cityLocalities = allLocalities
-    .filter((l) => l.cityId === city.id)
-    .map((l) => ({ id: l.id, name: l.name }));
+  const cityLocalitiesFull = allLocalities.filter((l) => l.cityId === city.id);
+  const cityLocalities = cityLocalitiesFull.map((l) => ({ id: l.id, name: l.name }));
+
+  // Rank statuses so each locality's marker reflects its most urgent
+  // current outage, if it has more than one.
+  const STATUS_RANK: Record<string, number> = {
+    ongoing: 3,
+    starting_soon: 2,
+    scheduled: 2,
+    restored: 1,
+    scheduled_window_ended: 0,
+    cancelled: 0,
+    unknown: 0,
+  };
+  const markerStatusByLocality = new Map<number, MapMarker["status"]>();
+  for (const { outage, locality } of rows) {
+    if (!locality) continue;
+    const status = computeOutageStatus(outage);
+    const rank = STATUS_RANK[status] ?? 0;
+    const mapped: MapMarker["status"] =
+      status === "ongoing" ? "ongoing" : status === "restored" ? "restored" : rank >= 2 ? "scheduled" : "normal";
+    const current = markerStatusByLocality.get(locality.id);
+    const currentRank = current
+      ? { ongoing: 3, scheduled: 2, restored: 1, normal: 0, muted: -1 }[current]
+      : -1;
+    if (rank > currentRank) markerStatusByLocality.set(locality.id, mapped);
+  }
+
+  const localityMarkers: MapMarker[] = cityLocalitiesFull
+    .filter((l) => l.latitude != null && l.longitude != null)
+    .map((l) => ({
+      id: l.id,
+      lat: l.latitude as number,
+      lng: l.longitude as number,
+      label: l.name,
+      status: markerStatusByLocality.get(l.id) ?? "normal",
+    }));
 
   const cards: OutageCardData[] = rows.map(({ outage, locality, provider }) => ({
     id: outage.id,
@@ -114,6 +149,24 @@ export default async function BengaluruPowerCutPage() {
                   })
                 : "—"}
             </span>
+          </div>
+        </div>
+
+        <div className="mt-6 glow-blue rounded-xl border border-line-neon bg-bg-card p-6">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-white">
+            Locality Map
+          </h2>
+          <p className="mt-1 text-sm text-text-muted">
+            Colored by each locality&rsquo;s current status — red is
+            ongoing, orange is scheduled, blue is normal.
+          </p>
+          <div className="mt-4 overflow-hidden rounded-lg border border-line-soft">
+            <MapLoader
+              center={[12.9716, 77.5946]}
+              zoom={11}
+              markers={localityMarkers}
+              heightClassName="h-96"
+            />
           </div>
         </div>
 

@@ -83,6 +83,15 @@ const [{ id: cityId }] = await sql`
   RETURNING id
 `;
 
+const LOCALITY_COORDS = {
+  Whitefield: [12.9698, 77.75],
+  "Electronic City": [12.8452, 77.6602],
+  Indiranagar: [12.9784, 77.6408],
+  Koramangala: [12.9352, 77.6245],
+  Jayanagar: [12.9308, 77.5838],
+  Yelahanka: [13.1007, 77.5963],
+};
+
 const localityIds = {};
 for (const name of [
   "Whitefield",
@@ -93,8 +102,9 @@ for (const name of [
   "Yelahanka",
 ]) {
   const slug = name.toLowerCase().replace(/\s+/g, "-");
+  const [lat, lng] = LOCALITY_COORDS[name];
   const [{ id }] = await sql`
-    INSERT INTO localities (city_id, name, slug) VALUES (${cityId}, ${name}, ${slug})
+    INSERT INTO localities (city_id, name, slug, latitude, longitude) VALUES (${cityId}, ${name}, ${slug}, ${lat}, ${lng})
     RETURNING id
   `;
   localityIds[name] = id;

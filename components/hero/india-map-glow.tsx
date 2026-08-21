@@ -62,9 +62,9 @@ export function IndiaMapGlow({
       <path
         d={pathData}
         stroke="url(#india-outline)"
-        strokeWidth="2"
+        strokeWidth="2.5"
         strokeLinejoin="round"
-        fill="rgba(22,135,255,0.05)"
+        fill="rgba(22,135,255,0.12)"
         filter="url(#india-glow)"
       />
 
@@ -77,16 +77,16 @@ export function IndiaMapGlow({
                 <circle
                   cx={node.x}
                   cy={node.y}
-                  r="16"
+                  r="20"
                   fill="#FF3B4A"
                   filter="url(#india-glow)"
                 />
                 <text
                   x={node.x}
-                  y={node.y + 5}
+                  y={node.y + 6}
                   textAnchor="middle"
-                  fontSize="15"
-                  fontWeight="700"
+                  fontSize="18"
+                  fontWeight="800"
                   fill="#ffffff"
                 >
                   {bengaluruCount}
@@ -96,9 +96,9 @@ export function IndiaMapGlow({
               <circle
                 cx={node.x}
                 cy={node.y}
-                r={isLive ? 7 : 3.5}
+                r={isLive ? 9 : 2.5}
                 fill={isLive ? "#FFD400" : "#1687FF"}
-                opacity={isLive ? 1 : 0.45}
+                opacity={isLive ? 1 : 0.3}
                 filter="url(#india-glow)"
               />
             )}
