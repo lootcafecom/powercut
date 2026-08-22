@@ -1,70 +1,52 @@
 @import "tailwindcss";
 
 /*
-  Direction: dark futuristic electricity-monitoring theme, per brief.
-  Real content only — see README for what's real vs. roadmap on this site.
+  Theme A — Amber/Copper glow, chosen after comparing 4 options against a
+  static demo (see conversation). Fixed rule: red = ongoing/danger,
+  green = restored/good, ALWAYS — regardless of brand accent. Only the
+  brand accent (headline glow, primary buttons, badges) uses amber/copper.
 
-  Palette:
-    --bg-deep    #020817  page background
-    --bg-panel   #06142D  section/panel background
-    --bg-card    #0A1F42  card surface
-    --line       rgba(0,168,255,.16)  neon-tinted borders
-    --line-soft  rgba(255,255,255,.08) neutral borders
-    --blue       #1687FF  primary electric blue
-    --blue-2     #00A8FF
-    --cyan       #00D9FF  secondary accent
-    --yellow     #FFD400  brand accent / CTA
-    --yellow-2   #FFC400
-    --purple     #8B5CFF  sparing secondary highlight
-    --red        #FF3B4A  ongoing outage
-    --orange     #FFB800  scheduled outage
-    --green      #19D66B  restored / good
-    --text       #F3F7FC  primary text on dark
-    --text-muted #90A3C7  secondary text on dark
+  Admin panel is intentionally NOT themed — legacy light tokens are kept
+  alongside these so it keeps working unchanged.
 */
 
 :root {
-  --background: #020817;
-  --foreground: #f3f7fc;
+  --background: #05060A;
+  --foreground: #F2F3F7;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  --color-bg-deep: #020817;
-  --color-bg-panel: #06142d;
-  --color-bg-card: #0a1f42;
-  --color-line: #d7dad6;
-  --color-line-neon: rgba(0, 168, 255, 0.16);
-  --color-line-soft: rgba(255, 255, 255, 0.08);
+  --color-bg-deep: #05060A;
+  --color-glass: rgba(255,255,255,0.035);
+  --color-glass-border: rgba(255,255,255,0.08);
 
-  --color-blue: #1687ff;
-  --color-blue-2: #00a8ff;
-  --color-cyan: #00d9ff;
-  --color-yellow: #ffd400;
-  --color-yellow-2: #ffc400;
-  --color-purple: #8b5cff;
-  --color-red: #ff3b4a;
-  --color-orange: #ffb800;
-  --color-green: #19d66b;
+  --color-violet: #FFB020; /* brand accent primary (kept var name for continuity with demo) */
+  --color-cyan: #FF6B35;   /* brand accent secondary */
+  --color-gold: #FFD700;
 
-  --color-text: #f3f7fc;
-  --color-text-muted: #90a3c7;
+  --color-pink: #F87171;   /* FIXED: ongoing / danger — never themed */
+  --color-mint: #34D399;   /* FIXED: restored / good — never themed */
+  --color-amber-status: #FFB020; /* scheduled status */
 
-  /* Legacy tokens kept for the admin panel, which stays on its existing
-     light utility theme — this redesign is scoped to public-facing pages. */
+  --color-white: #F2F3F7;
+  --color-gray: #C7CCDA;
+  --color-gray-dim: #9AA1B5;
+
+  /* Legacy tokens — admin panel only, unchanged from before */
   --color-ink: #12181f;
   --color-paper: #f6f7f5;
   --color-paper-2: #eff1ee;
-  --color-line-legacy: #d7dad6;
+  --color-line: #d7dad6;
   --color-signal: #e8a33d;
   --color-signal-ink: #7a4b0f;
   --color-alert: #c1432e;
   --color-ok: #3f9142;
   --color-muted: #5b6570;
 
-  --font-sans: "Segoe UI", -apple-system, system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", "IBM Plex Mono", Menlo, Consolas, monospace;
 }
 
@@ -79,47 +61,41 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Premium, restrained glow utilities — used deliberately, not everywhere. */
-.glow-blue {
-  box-shadow:
-    0 0 24px rgba(22, 135, 255, 0.18),
-    inset 0 0 24px rgba(22, 135, 255, 0.04);
-}
-.glow-yellow {
-  box-shadow:
-    0 0 24px rgba(255, 212, 0, 0.18),
-    inset 0 0 24px rgba(255, 212, 0, 0.03);
-}
-.glow-red {
-  box-shadow: 0 0 20px rgba(255, 59, 74, 0.22);
-}
-.glow-cyan {
-  box-shadow: 0 0 20px rgba(0, 217, 255, 0.18);
-}
-.text-glow-yellow {
-  filter: drop-shadow(0 0 10px rgba(255, 212, 0, 0.55));
-}
-.icon-glow-blue {
-  filter: drop-shadow(0 0 6px rgba(22, 135, 255, 0.7));
+/* Glass card base — public pages only */
+.glass {
+  background: var(--color-glass);
+  border: 1px solid var(--color-glass-border);
+  border-radius: 18px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
-.bg-radial-glow {
-  background:
-    radial-gradient(60% 50% at 15% 0%, rgba(22, 135, 255, 0.16) 0%, transparent 60%),
-    radial-gradient(45% 40% at 85% 10%, rgba(139, 92, 255, 0.10) 0%, transparent 60%),
-    radial-gradient(50% 40% at 50% 100%, rgba(0, 217, 255, 0.08) 0%, transparent 60%);
+/* Ambient background glow orbs */
+.orb {
+  position: fixed; border-radius: 9999px; filter: blur(90px); pointer-events: none; z-index: 0; opacity: 0.35;
+}
+.orb-1 { width: 500px; height: 500px; background: #FFB020; top: -150px; left: -100px; }
+.orb-2 { width: 420px; height: 420px; background: #FF6B35; top: 200px; right: -150px; opacity: 0.22; }
+.orb-3 { width: 380px; height: 380px; background: #F87171; bottom: 100px; left: 30%; opacity: 0.12; }
+
+.glow-divider {
+  height: 1px; position: relative; z-index: 1;
+  background: linear-gradient(90deg, transparent, rgba(255,176,32,0.5) 20%, rgba(255,107,53,0.5) 50%, rgba(255,176,32,0.5) 80%, transparent);
 }
 
-.grid-lines {
-  background-image:
-    linear-gradient(rgba(22, 135, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(22, 135, 255, 0.06) 1px, transparent 1px);
-  background-size: 48px 48px;
+.glow-text {
+  background: linear-gradient(120deg, #FFB020, #FF6B35 60%, #FFD700);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 26px rgba(255,107,53,0.45));
+}
+
+.glow-badge-cta {
+  box-shadow: 0 0 30px rgba(255,176,32,0.35);
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .pulse-dot {
-    animation: pulse-dot 2s ease-in-out infinite;
+    animation: pulse-dot 1.8s ease-in-out infinite;
   }
   .hover-lift {
     transition: transform 0.18s ease, box-shadow 0.18s ease;
@@ -130,5 +106,5 @@ body {
 }
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
+  50% { opacity: 0.4; }
 }

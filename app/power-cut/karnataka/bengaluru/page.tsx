@@ -10,7 +10,7 @@ import { REPORT_ACTIVE_WINDOW_HOURS } from "@/lib/reports/tiers";
 import { siteConfig } from "@/lib/config/site";
 import { MapLoader, type MapMarker } from "@/components/map/map-loader";
 
-export const dynamic = "force-dynamic"; // status must always reflect "now"
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: `Bengaluru Power Cut Today — Live Outage Schedule${siteConfig.seo.defaultTitleSuffix}`,
@@ -24,7 +24,7 @@ export default async function BengaluruPowerCutPage() {
   if (!result) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 text-center">
-        <p className="text-text-muted">City not found. Run the database seed script.</p>
+        <p className="text-gray-dim">City not found. Run the database seed script.</p>
       </div>
     );
   }
@@ -36,16 +36,9 @@ export default async function BengaluruPowerCutPage() {
   const cityLocalitiesFull = allLocalities.filter((l) => l.cityId === city.id);
   const cityLocalities = cityLocalitiesFull.map((l) => ({ id: l.id, name: l.name }));
 
-  // Rank statuses so each locality's marker reflects its most urgent
-  // current outage, if it has more than one.
   const STATUS_RANK: Record<string, number> = {
-    ongoing: 3,
-    starting_soon: 2,
-    scheduled: 2,
-    restored: 1,
-    scheduled_window_ended: 0,
-    cancelled: 0,
-    unknown: 0,
+    ongoing: 3, starting_soon: 2, scheduled: 2, restored: 1,
+    scheduled_window_ended: 0, cancelled: 0, unknown: 0,
   };
   const markerStatusByLocality = new Map<number, MapMarker["status"]>();
   for (const { outage, locality } of rows) {
@@ -55,48 +48,30 @@ export default async function BengaluruPowerCutPage() {
     const mapped: MapMarker["status"] =
       status === "ongoing" ? "ongoing" : status === "restored" ? "restored" : rank >= 2 ? "scheduled" : "normal";
     const current = markerStatusByLocality.get(locality.id);
-    const currentRank = current
-      ? { ongoing: 3, scheduled: 2, restored: 1, normal: 0, muted: -1 }[current]
-      : -1;
+    const currentRank = current ? { ongoing: 3, scheduled: 2, restored: 1, normal: 0, muted: -1 }[current] : -1;
     if (rank > currentRank) markerStatusByLocality.set(locality.id, mapped);
   }
-
   const localityMarkers: MapMarker[] = cityLocalitiesFull
     .filter((l) => l.latitude != null && l.longitude != null)
     .map((l) => ({
-      id: l.id,
-      lat: l.latitude as number,
-      lng: l.longitude as number,
-      label: l.name,
+      id: l.id, lat: l.latitude as number, lng: l.longitude as number, label: l.name,
       status: markerStatusByLocality.get(l.id) ?? "normal",
     }));
 
   const cards: OutageCardData[] = rows.map(({ outage, locality, provider }) => ({
-    id: outage.id,
-    title: outage.title,
-    reason: outage.reason,
-    localityName: locality?.name ?? null,
-    providerShortName: provider.shortName,
-    startTime: outage.startTime,
-    endTime: outage.endTime,
-    actualEndTime: outage.actualEndTime,
-    sourceType: outage.sourceType,
-    sourceUrl: outage.sourceUrl,
-    lastVerifiedAt: outage.lastVerifiedAt,
-    verificationStatus: outage.verificationStatus,
-    confidenceScore: outage.confidenceScore,
+    id: outage.id, title: outage.title, reason: outage.reason,
+    localityName: locality?.name ?? null, providerShortName: provider.shortName,
+    startTime: outage.startTime, endTime: outage.endTime, actualEndTime: outage.actualEndTime,
+    sourceType: outage.sourceType, sourceUrl: outage.sourceUrl, lastVerifiedAt: outage.lastVerifiedAt,
+    verificationStatus: outage.verificationStatus, confidenceScore: outage.confidenceScore,
   }));
 
   const today = cards.filter((c) => isSameISTDate(c.startTime, 0));
   const tomorrow = cards.filter((c) => isSameISTDate(c.startTime, 1));
   const upcoming = cards.filter((c) => {
     const status = computeOutageStatus(c);
-    return (
-      new Date(c.startTime).getTime() > Date.now() &&
-      !isSameISTDate(c.startTime, 0) &&
-      !isSameISTDate(c.startTime, 1) &&
-      status !== "cancelled"
-    );
+    return new Date(c.startTime).getTime() > Date.now() && !isSameISTDate(c.startTime, 0) &&
+      !isSameISTDate(c.startTime, 1) && status !== "cancelled";
   });
   const history = cards.filter((c) => {
     const status = computeOutageStatus(c);
@@ -105,114 +80,76 @@ export default async function BengaluruPowerCutPage() {
 
   const ongoingCount = cards.filter((c) => computeOutageStatus(c) === "ongoing").length;
   const now = new Date();
-  const lastChecked = rows
-    .map((r) => r.outage.lastVerifiedAt)
-    .filter(Boolean)
-    .sort()
-    .reverse()[0];
+  const lastChecked = rows.map((r) => r.outage.lastVerifiedAt).filter(Boolean).sort().reverse()[0];
 
   return (
-    <div className="bg-radial-glow min-h-screen">
-      <div className="mx-auto max-w-5xl px-4 py-8">
-        {/* Status readout */}
-        <div className="glow-blue rounded-xl border border-line-neon bg-bg-card p-6 sm:p-8">
-          <p className="text-xs uppercase tracking-widest text-text-muted">
-            Karnataka · India
-          </p>
-          <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-            Bengaluru Power Cut Today
-          </h1>
-          <p className="mt-1 text-text-muted">{formatDateIST(now.toISOString())}</p>
+    <div className="mx-auto max-w-5xl px-4 sm:px-10 py-8">
+      <div className="glass p-6 sm:p-8">
+        <p className="text-xs uppercase tracking-widest text-gray-dim">Karnataka · India</p>
+        <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+          Bengaluru Power Cut Today
+        </h1>
+        <p className="mt-1 text-gray">{formatDateIST(now.toISOString())}</p>
 
-          <div className="mt-5 flex flex-wrap gap-6">
-            <Stat label="Today's outages" value={today.length} />
-            <Stat label="Tomorrow's outages" value={tomorrow.length} />
-            <Stat
-              label="Ongoing right now"
-              value={ongoingCount}
-              accent={ongoingCount > 0}
-            />
-          </div>
-
-          <div className="mt-5 flex items-center gap-2 text-xs tabular-nums-mono text-text-muted">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="pulse-dot absolute inline-flex h-full w-full rounded-full bg-green" />
-            </span>
-            <span>
-              Last checked:{" "}
-              {lastChecked
-                ? new Date(lastChecked).toLocaleString("en-IN", {
-                    timeZone: siteConfig.defaultTimezone,
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true,
-                  })
-                : "—"}
-            </span>
-          </div>
+        <div className="mt-5 flex flex-wrap gap-6">
+          <Stat label="Today's outages" value={today.length} />
+          <Stat label="Tomorrow's outages" value={tomorrow.length} />
+          <Stat label="Ongoing right now" value={ongoingCount} accent={ongoingCount > 0} />
         </div>
 
-        <div className="mt-6 glow-blue rounded-xl border border-line-neon bg-bg-card p-6">
-          <h2 className="flex items-center gap-2 text-lg font-bold text-white">
-            Locality Map
-          </h2>
-          <p className="mt-1 text-sm text-text-muted">
-            Colored by each locality&rsquo;s current status — red is
-            ongoing, orange is scheduled, blue is normal.
-          </p>
-          <div className="mt-4 overflow-hidden rounded-lg border border-line-soft">
-            <MapLoader
-              center={[12.9716, 77.5946]}
-              zoom={11}
-              markers={localityMarkers}
-              heightClassName="h-96"
-            />
-          </div>
+        <div className="mt-5 flex items-center gap-2 text-xs tabular-nums-mono text-gray-dim">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="pulse-dot absolute inline-flex h-full w-full rounded-full bg-mint shadow-[0_0_8px_#34D399]" />
+          </span>
+          <span>
+            Last checked:{" "}
+            {lastChecked
+              ? new Date(lastChecked).toLocaleString("en-IN", {
+                  timeZone: siteConfig.defaultTimezone, hour: "numeric", minute: "2-digit", hour12: true,
+                })
+              : "—"}
+          </span>
         </div>
+      </div>
 
-        <div className="mt-6 flex flex-col gap-4">
-          <CommunityReportsPanel summaries={reportSummaries} />
-          <div className="flex justify-end">
-            <ReportOutageForm localities={cityLocalities} />
-          </div>
+      <div className="mt-6 glass p-6">
+        <h2 className="text-lg font-bold text-white">Locality Map</h2>
+        <p className="mt-1 text-sm text-gray-dim">
+          Colored by each locality&rsquo;s current status — red is ongoing, amber is scheduled, blue is normal.
+        </p>
+        <div className="mt-4 overflow-hidden rounded-lg border border-glass-border">
+          <MapLoader center={[12.9716, 77.5946]} zoom={11} markers={localityMarkers} heightClassName="h-96" />
         </div>
+      </div>
 
-        <div className="mt-8">
-          <OutageTabs today={today} tomorrow={tomorrow} upcoming={upcoming} history={history} />
+      <div className="mt-6 flex flex-col gap-4">
+        <CommunityReportsPanel summaries={reportSummaries} />
+        <div className="flex justify-end">
+          <ReportOutageForm localities={cityLocalities} />
         </div>
+      </div>
 
-        <div className="mt-10 rounded-xl border border-line-soft bg-bg-card p-5 text-sm text-text-muted">
-          <p>
-            Outage information for Bengaluru is sourced from BESCOM&rsquo;s
-            official scheduled-outage notices and secondary sources, and
-            labeled by source on every card. Community reports above are a
-            separate, unverified signal for outages nobody has announced.
-          </p>
-        </div>
+      <div className="mt-8">
+        <OutageTabs today={today} tomorrow={tomorrow} upcoming={upcoming} history={history} />
+      </div>
+
+      <div className="mt-10 glass p-5 text-sm text-gray-dim">
+        <p>
+          Outage information for Bengaluru is sourced from BESCOM&rsquo;s official
+          scheduled-outage notices and secondary sources, and labeled by source on
+          every card. Community reports above are a separate, unverified signal
+          for outages nobody has announced.
+        </p>
       </div>
     </div>
   );
 }
 
-function Stat({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: number;
-  accent?: boolean;
-}) {
+function Stat({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
   return (
     <div>
-      <p
-        className={`tabular-nums-mono text-3xl font-bold ${
-          accent ? "text-red" : "text-white"
-        }`}
-      >
-        {value}
-      </p>
-      <p className="text-xs uppercase tracking-wide text-text-muted">{label}</p>
+      <p className={`tabular-nums-mono text-3xl font-bold ${accent ? "text-pink" : "text-white"}`}>{value}</p>
+      <p className="text-xs uppercase tracking-wide text-gray-dim">{label}</p>
     </div>
   );
 }

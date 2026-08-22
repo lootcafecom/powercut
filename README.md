@@ -73,39 +73,42 @@ env var to change it — do this before deploying anywhere real).
    — swap in real display/mono webfonts when deploying somewhere with
    normal internet access.
 
-## Design: "PowerCut India" dark electric theme
+## Design: Theme A (Amber/Copper glow)
 
-The public-facing pages (`/`, `/power-cut/karnataka/bengaluru`) were
-redesigned to a dark, glowing electricity-monitoring aesthetic per an
-explicit visual brief — deep navy background, electric blue/cyan, brand
-yellow, sparing purple, status colors (red=ongoing, orange=scheduled,
-green=restored). See `app/globals.css` for the full token system.
+The public-facing pages now use "Theme A" — chosen after comparing four
+palette options as static demos. Key rules, enforced throughout:
 
-**The admin panel intentionally was NOT redesigned** — it stays on its
-original light utility theme. Both token sets coexist in `globals.css`
-(new tokens for public pages, legacy tokens like `--color-ink`/
-`--color-paper` kept for admin) so neither breaks the other.
+- **Red (`#F87171`) = ongoing/danger and green (`#34D399`) = restored/good
+  are FIXED constants**, never themed. Only the brand accent (amber→copper
+  gradient) is used for headline glow, primary buttons, and badges — see
+  `lib/outage-status.ts` and `app/globals.css`.
+- Glass-morphism cards (`.glass` utility), ambient background glow orbs,
+  a glowing gradient divider, and pulsing status dots are used throughout
+  — see `app/globals.css` for all custom utilities.
+- **The admin panel is intentionally NOT themed** — `app/admin/layout.tsx`
+  locally overrides the dark public-site body back to the original light
+  theme for the whole `/admin` section, so admin stays legible without
+  touching every individual admin page.
 
-**What changed from the original visual brief, and why:** the brief's
-stat cards and copy included fabricated numbers (e.g. "2,458 power cuts
-today," "1.2M+ users") and features that don't exist (mobile apps,
-all-India live coverage, a multi-city outage map with real counts).
-Those were replaced with:
-- Stat cards wired to **real queries** against the live database
-  (`getHomepageStats()` in `lib/db/queries.ts`) — today's count, total
-  tracked, ongoing count, localities covered. No number on the homepage
-  is invented.
-- Anything not actually built (other cities, email alerts, mobile apps)
-  is either omitted or explicitly labeled "Coming soon" rather than
-  presented as live.
-- The India map is a stylized SVG (per the brief's own allowance for
-  this at prototype stage) with only Bengaluru's node shown as "live";
-  other city nodes are dimmed placeholders, not real markers with real
-  outage counts.
+### A note on visual verification
 
-This keeps the exact visual direction requested while not undermining
-the "data reliability over visual design" principle this whole project
-is built around.
+This was built and iterated against real screenshots (using `wkhtmltoimage`,
+installed via apt) at several points in development — this caught real
+bugs (flexbox `gap` not rendering in that older engine, a 5-column grid
+collapsing to 1 column, mobile content overflowing its container). Those
+fixes are real and apply regardless of browser.
+
+However, that same tool has a **known limitation** specific to this app:
+it doesn't handle React 19's `data-precedence` stylesheet-loading
+attribute (visible in the compiled HTML's `<link>` tag), which is a
+completely standard, well-supported mechanism in real browsers but not
+in that ~2016-era rendering engine. This caused screenshots taken late in
+development to show unstyled default HTML (blue underlined links, default
+buttons) even though the underlying `className` values and compiled CSS
+were independently verified correct via direct file/HTML inspection. If
+you ever see this app looking unstyled in a screenshot, check whether it
+was captured with `wkhtmltoimage` before assuming it's a real bug — check
+the compiled CSS/HTML directly instead, the way this was resolved here.
 
 ## Interactive map (Leaflet + OpenStreetMap)
 

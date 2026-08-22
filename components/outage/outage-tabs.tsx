@@ -25,21 +25,21 @@ export function OutageTabs({
 
   return (
     <div>
-      <div className="flex gap-1 border-b border-line-soft" role="tablist">
+      <div className="flex gap-1 border-b border-glass-border" role="tablist">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             role="tab"
             aria-selected={active === tab.key}
             onClick={() => setActive(tab.key)}
-            className={`px-4 py-2.5 text-sm font-semibold uppercase tracking-wide transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-yellow ${
+            className={`px-4 py-2.5 text-sm font-semibold uppercase tracking-wide transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-status ${
               active === tab.key
-                ? "border-b-2 border-yellow text-white"
-                : "text-text-muted hover:text-white"
+                ? "border-b-2 border-amber-status text-white"
+                : "text-gray-dim hover:text-white"
             }`}
           >
             {tab.label}
-            <span className="ml-1.5 tabular-nums-mono text-xs text-text-muted">
+            <span className="ml-1.5 tabular-nums-mono text-xs text-gray-dim">
               {data[tab.key].length}
             </span>
           </button>

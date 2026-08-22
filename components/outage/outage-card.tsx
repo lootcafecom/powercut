@@ -10,13 +10,13 @@ import { preparationTips } from "@/lib/preparation";
 import { getSourceMeta } from "@/lib/sources/source-meta";
 
 const statusBarClasses: Record<OutageStatus, string> = {
-  cancelled: "bg-text-muted/40",
-  scheduled: "bg-orange",
-  starting_soon: "bg-orange",
-  ongoing: "bg-red",
-  scheduled_window_ended: "bg-text-muted/40",
-  restored: "bg-green",
-  unknown: "bg-text-muted/40",
+  cancelled: "bg-white/15",
+  scheduled: "bg-amber-status",
+  starting_soon: "bg-amber-status",
+  ongoing: "bg-pink",
+  scheduled_window_ended: "bg-white/15",
+  restored: "bg-mint",
+  unknown: "bg-white/15",
 };
 
 export interface OutageCardData {
@@ -42,7 +42,7 @@ export function OutageCard({ outage }: { outage: OutageCardData }) {
   const sourceMeta = getSourceMeta(outage.sourceUrl, outage.sourceType);
 
   return (
-    <article className="hover-lift flex overflow-hidden rounded-xl border border-line-soft bg-bg-card">
+    <article className="hover-lift glass flex overflow-hidden">
       <div className={`w-1.5 shrink-0 ${statusBarClasses[status]}`} aria-hidden />
       <div className="flex-1 p-4 sm:p-5">
         <div className="flex flex-wrap items-start justify-between gap-2">
@@ -50,7 +50,7 @@ export function OutageCard({ outage }: { outage: OutageCardData }) {
             <h3 className="text-lg font-bold text-white">
               {outage.localityName ?? "City-wide"}
             </h3>
-            <p className="text-sm text-text-muted">{outage.title}</p>
+            <p className="text-sm text-gray">{outage.title}</p>
           </div>
           <div className="flex flex-col items-end gap-1">
             <span
@@ -61,8 +61,8 @@ export function OutageCard({ outage }: { outage: OutageCardData }) {
             <span
               className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
                 sourceMeta.official
-                  ? "border-green/30 bg-green/10 text-green"
-                  : "border-orange/30 bg-orange/10 text-orange"
+                  ? "border-mint/30 bg-mint/10 text-mint"
+                  : "border-amber-status/30 bg-amber-status/10 text-amber-status"
               }`}
             >
               {sourceMeta.official ? "✓ " : "⚠ "}
@@ -73,33 +73,33 @@ export function OutageCard({ outage }: { outage: OutageCardData }) {
 
         <div className="mt-3 flex items-baseline gap-2 tabular-nums-mono text-2xl font-bold text-white">
           <span>{formatTimeIST(outage.startTime)}</span>
-          <span className="text-base text-text-muted">–</span>
+          <span className="text-base text-gray-dim">–</span>
           <span>{formatTimeIST(outage.endTime)}</span>
         </div>
 
-        <p className="mt-1 text-xs text-text-muted">{statusDescriptions[status]}</p>
+        <p className="mt-1 text-xs text-gray-dim">{statusDescriptions[status]}</p>
 
         {outage.actualEndTime && (
-          <p className="mt-1 text-xs font-medium text-green">
+          <p className="mt-1 text-xs font-medium text-mint">
             Confirmed restored at {formatTimeIST(outage.actualEndTime)}
           </p>
         )}
 
         <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
           <div>
-            <dt className="text-xs uppercase tracking-wide text-text-muted">Reason</dt>
+            <dt className="text-xs uppercase tracking-wide text-gray-dim">Reason</dt>
             <dd className="text-white">{outage.reason ?? "Not specified"}</dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wide text-text-muted">Provider</dt>
+            <dt className="text-xs uppercase tracking-wide text-gray-dim">Provider</dt>
             <dd className="text-white">{outage.providerShortName}</dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wide text-text-muted">Source</dt>
+            <dt className="text-xs uppercase tracking-wide text-gray-dim">Source</dt>
             <dd className="text-white">{sourceMeta.displayName}</dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wide text-text-muted">Last verified</dt>
+            <dt className="text-xs uppercase tracking-wide text-gray-dim">Last verified</dt>
             <dd className="tabular-nums-mono text-white">
               {outage.lastVerifiedAt ? formatDateTimeIST(outage.lastVerifiedAt) : "—"}
             </dd>
@@ -107,8 +107,8 @@ export function OutageCard({ outage }: { outage: OutageCardData }) {
         </dl>
 
         {tips.length > 0 && (
-          <div className="mt-4 rounded-md border border-yellow/25 bg-yellow/10 p-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-yellow">
+          <div className="mt-4 rounded-md border border-amber-status/25 bg-amber-status/10 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-amber-status">
               Before it happens
             </p>
             <ul className="mt-1 list-inside list-disc text-sm text-white/80">
@@ -124,7 +124,7 @@ export function OutageCard({ outage }: { outage: OutageCardData }) {
             href={outage.sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-3 inline-block text-xs font-medium text-blue-2 underline underline-offset-2 hover:text-cyan"
+            className="mt-3 inline-block text-xs font-medium text-cyan underline underline-offset-2 hover:text-amber-status"
           >
             View official source ↗
           </a>

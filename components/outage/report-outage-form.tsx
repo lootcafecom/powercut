@@ -49,7 +49,7 @@ export function ReportOutageForm({ localities }: { localities: Locality[] }) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="glow-red rounded-md border border-red/40 bg-red/10 px-4 py-2 text-sm font-semibold uppercase tracking-wide text-red hover:bg-red/20"
+        className="rounded-2xl border border-pink/40 bg-pink/8 px-4 py-2 text-sm font-bold text-pink hover:shadow-[0_0_20px_rgba(248,113,113,0.3)] transition-shadow"
       >
         Report a power cut
       </button>
@@ -58,7 +58,7 @@ export function ReportOutageForm({ localities }: { localities: Locality[] }) {
 
   if (status === "done") {
     return (
-      <div className="rounded-md border border-green/30 bg-green/10 p-4 text-sm text-green">
+      <div className="glass border-mint/30 bg-mint/10 p-4 text-sm text-mint">
         Thanks — your report has been added. It&rsquo;ll show up in the
         community reports above.
       </div>
@@ -66,14 +66,11 @@ export function ReportOutageForm({ localities }: { localities: Locality[] }) {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="w-full rounded-md border border-line-soft bg-bg-card p-4 sm:w-auto"
-    >
-      <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+    <form onSubmit={handleSubmit} className="glass w-full p-4 sm:w-auto">
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-dim">
         Report a power cut
       </p>
-      <p className="mt-1 text-xs text-text-muted">
+      <p className="mt-1 text-xs text-gray-dim">
         This is a crowd signal, not an official report — used to flag
         possible unscheduled outages nobody has announced yet.
       </p>
@@ -82,11 +79,11 @@ export function ReportOutageForm({ localities }: { localities: Locality[] }) {
           value={localityId}
           onChange={(e) => setLocalityId(e.target.value)}
           required
-          className="flex-1 rounded-md border border-line-soft bg-bg-panel px-3 py-2 text-sm text-white focus:border-blue focus:outline-none"
+          className="flex-1 rounded-md border border-glass-border bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-amber-status focus:outline-none"
         >
           <option value="">Select your locality</option>
           {localities.map((l) => (
-            <option key={l.id} value={l.id}>
+            <option key={l.id} value={l.id} className="text-ink">
               {l.name}
             </option>
           ))}
@@ -97,22 +94,22 @@ export function ReportOutageForm({ localities }: { localities: Locality[] }) {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Optional note"
           maxLength={300}
-          className="flex-1 rounded-md border border-line-soft bg-bg-panel px-3 py-2 text-sm text-white placeholder:text-text-muted focus:border-blue focus:outline-none"
+          className="flex-1 rounded-md border border-glass-border bg-white/[0.03] px-3 py-2 text-sm text-white placeholder:text-gray-dim focus:border-amber-status focus:outline-none"
         />
       </div>
-      {errorMsg && <p className="mt-2 text-xs text-red">{errorMsg}</p>}
+      {errorMsg && <p className="mt-2 text-xs text-pink">{errorMsg}</p>}
       <div className="mt-3 flex gap-2">
         <button
           type="submit"
           disabled={status === "pending" || !localityId}
-          className="glow-red rounded-md bg-red px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white hover:brightness-90 disabled:opacity-50"
+          className="rounded-md bg-pink px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white hover:brightness-90 disabled:opacity-50"
         >
           {status === "pending" ? "Submitting…" : "Submit report"}
         </button>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="rounded-md px-4 py-2 text-xs font-semibold uppercase tracking-wide text-text-muted hover:text-white"
+          className="rounded-md px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-dim hover:text-white"
         >
           Cancel
         </button>

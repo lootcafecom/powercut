@@ -81,13 +81,13 @@ export const statusDescriptions: Record<OutageStatus, string> = {
   unknown: "We don't have enough reliable information to determine status.",
 };
 
-/** Bold solid-color status classes (dark theme) — matches the homepage's boosted contrast. */
+/** Theme A status classes — red/green are FIXED regardless of brand theme. */
 export const statusColorClasses: Record<OutageStatus, string> = {
-  cancelled: "bg-white/15 text-white border-transparent",
-  scheduled: "bg-orange text-bg-deep border-transparent",
-  starting_soon: "bg-orange text-bg-deep border-transparent",
-  ongoing: "bg-red text-white border-transparent",
-  scheduled_window_ended: "bg-white/15 text-white border-transparent",
-  restored: "bg-green text-bg-deep border-transparent",
-  unknown: "bg-white/15 text-white border-transparent",
+  cancelled: "bg-white/10 text-gray-dim border-glass-border",
+  scheduled: "bg-amber-status/15 text-amber-status border-amber-status/30",
+  starting_soon: "bg-amber-status/20 text-amber-status border-amber-status/40",
+  ongoing: "bg-pink/15 text-pink border-pink/30",
+  scheduled_window_ended: "bg-white/10 text-gray-dim border-glass-border",
+  restored: "bg-mint/15 text-mint border-mint/30",
+  unknown: "bg-white/10 text-gray-dim border-glass-border",
 };
