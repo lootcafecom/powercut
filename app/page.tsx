@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getHomepageStats, getOutagesForCity, getCityBySlug, getAllLocalities } from "@/lib/db/queries";
+import { getHomepageStats, getOutagesForCity, getCityBySlug, getAllLocalities, getCityDirectory } from "@/lib/db/queries";
 import { computeOutageStatus, statusLabels } from "@/lib/outage-status";
 import { formatTimeIST } from "@/lib/format";
 import { siteConfig } from "@/lib/config/site";
@@ -17,6 +17,14 @@ const STATUS_TEXT_CLASS: Record<string, string> = {
   unknown: "text-gray-dim",
 };
 
+// Illustrative only — NOT database rows. Real city list to be provided
+// and inserted properly; these are just well-known city names shown as
+// "coming soon" so the homepage communicates the roadmap honestly
+// without fabricating coverage or conflicting with the real list later.
+const UPCOMING_CITIES = [
+  "Delhi", "Mumbai", "Chennai", "Kolkata", "Hyderabad", "Pune", "Ahmedabad",
+];
+
 export default async function HomePage() {
   const stats = await getHomepageStats();
   const bengaluru = await getCityBySlug("karnataka", "bengaluru");
@@ -25,6 +33,7 @@ export default async function HomePage() {
   const cityLocalities = bengaluru
     ? allLocalities.filter((l) => l.cityId === bengaluru.city.id)
     : [];
+  const cityDirectory = await getCityDirectory();
 
   const cards = outageRows.map(({ outage, locality, provider }) => ({
     id: outage.id,
@@ -172,6 +181,42 @@ export default async function HomePage() {
 
       <div className="mx-auto max-w-[1280px] px-10">
         <div className="glow-divider mb-12" />
+      </div>
+
+      {/* CITIES DIRECTORY */}
+      <div className="mx-auto max-w-[1280px] px-10 mb-12">
+        <h2 className="text-xl font-extrabold mb-1">Cities</h2>
+        <p className="text-sm text-gray-dim mb-5">
+          Individual pages per city, added as real data sources are found —
+          nothing here is fabricated to look more complete than it is.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          {cityDirectory.map((c) => (
+            <Link
+              key={c.cityId}
+              href={`/power-cut/${c.stateSlug}/${c.citySlug}`}
+              className="glass hover-lift px-5 py-3 flex items-center gap-2.5"
+            >
+              <span className={`w-2 h-2 rounded-full ${c.isLive ? "bg-mint shadow-[0_0_8px_#34D399]" : "bg-gray-dim"}`} />
+              <span className="font-bold text-sm text-white">{c.cityName}</span>
+              <span className="text-xs text-gray-dim">{c.stateName}</span>
+              {c.isLive && (
+                <span className="text-[10px] font-extrabold text-mint uppercase tracking-wide">Live</span>
+              )}
+            </Link>
+          ))}
+          {UPCOMING_CITIES.map((name) => (
+            <span
+              key={name}
+              className="glass px-5 py-3 flex items-center gap-2.5 opacity-50 cursor-not-allowed"
+              title="Coming soon — not covered yet"
+            >
+              <span className="w-2 h-2 rounded-full bg-gray-dim" />
+              <span className="font-bold text-sm text-white">{name}</span>
+              <span className="text-[10px] font-extrabold text-gray-dim uppercase tracking-wide">Coming Soon</span>
+            </span>
+          ))}
+        </div>
       </div>
 
       {/* MAP */}

@@ -175,6 +175,27 @@ export async function getHomepageStats() {
   };
 }
 
+export async function getCityDirectory() {
+  const rows = await db
+    .select({
+      cityId: cities.id,
+      cityName: cities.name,
+      citySlug: cities.slug,
+      stateSlug: states.slug,
+      stateName: states.name,
+    })
+    .from(cities)
+    .innerJoin(states, eq(cities.stateId, states.id));
+
+  const outageCounts = await db
+    .select({ cityId: powerOutages.cityId })
+    .from(powerOutages)
+    .where(eq(powerOutages.verificationStatus, "published"));
+  const citiesWithData = new Set(outageCounts.map((r) => r.cityId));
+
+  return rows.map((r) => ({ ...r, isLive: citiesWithData.has(r.cityId) }));
+}
+
 export async function getAllStates() {
   return db.select().from(states);
 }

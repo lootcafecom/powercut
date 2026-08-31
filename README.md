@@ -73,7 +73,35 @@ env var to change it — do this before deploying anywhere real).
    — swap in real display/mono webfonts when deploying somewhere with
    normal internet access.
 
-## Design: Theme A (Amber/Copper glow)
+## Multi-city architecture
+
+The city page is a real dynamic route: `/power-cut/[state]/[city]`
+(`app/power-cut/[state]/[city]/page.tsx`), not hardcoded to Bengaluru.
+Adding a new city is a database operation, not a code change — insert
+rows into `states`/`cities`/`localities` and the page works immediately.
+
+- **Unknown cities show an honest "not covered yet" state** (not a
+  generic error, not fabricated data) with a link back to Bengaluru.
+- **Homepage city directory** (`getCityDirectory()` in
+  `lib/db/queries.ts`) reads real cities from the database and marks
+  each "Live" if it actually has published outages.
+- **`UPCOMING_CITIES`** in `app/page.tsx` is a small hardcoded array of
+  well-known city names shown as "Coming Soon" — these are NOT database
+  rows. They exist purely so the homepage communicates the multi-city
+  roadmap honestly without inserting guessed data that might conflict
+  with a real city list provided later. Replace this array (or remove
+  it and insert real inactive city rows instead) once a real city list
+  exists.
+
+## Design: Cyberpunk neon (magenta/purple) — current theme
+
+Ported from an approved static HTML demo into `app/globals.css`. Same
+fixed rule as every previous theme iteration: red (`#F87171`) =
+ongoing/danger, green (`#34D399`) = restored/good, never themed — only
+the brand accent (magenta/purple gradient, glow effects) reflects the
+current theme. Admin panel stays on its original light theme throughout.
+
+## Design: Theme A (Amber/Copper glow) — superseded
 
 The public-facing pages now use "Theme A" — chosen after comparing four
 palette options as static demos. Key rules, enforced throughout:

@@ -1,39 +1,44 @@
 @import "tailwindcss";
 
 /*
-  Theme A — Amber/Copper glow, chosen after comparing 4 options against a
-  static demo (see conversation). Fixed rule: red = ongoing/danger,
-  green = restored/good, ALWAYS — regardless of brand accent. Only the
-  brand accent (headline glow, primary buttons, badges) uses amber/copper.
+  Cyberpunk neon theme — ported from the approved static demo
+  (magenta/purple/electric-blue). FIXED rule, unchanged since Theme A:
+  red = ongoing/danger, green = restored/good, ALWAYS — never themed.
+  Only the brand accent (magenta/purple gradient, headline glow, buttons,
+  badges) reflects the theme.
 
-  Admin panel is intentionally NOT themed — legacy light tokens are kept
-  alongside these so it keeps working unchanged.
+  Admin panel stays on its legacy light theme — those tokens are kept
+  alongside these so admin is unaffected.
 */
 
 :root {
-  --background: #05060A;
-  --foreground: #F2F3F7;
+  --background: #030014;
+  --foreground: #F5F3FA;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  --color-bg-deep: #05060A;
+  --color-bg-deep: #030014;
+  --color-bg-2: #07001F;
   --color-glass: rgba(255,255,255,0.035);
-  --color-glass-border: rgba(255,255,255,0.08);
+  --color-glass-border: rgba(190,50,255,0.28);
 
-  --color-violet: #FFB020; /* brand accent primary (kept var name for continuity with demo) */
-  --color-cyan: #FF6B35;   /* brand accent secondary */
-  --color-gold: #FFD700;
+  --color-magenta: #FF17C9;
+  --color-purple: #A020F0;
+  --color-cyan: #3B9EFF;
+  --color-blue: #3B9EFF;
+  --color-yellow: #FFD400;
+  --color-orange: #FF9500;
 
   --color-pink: #F87171;   /* FIXED: ongoing / danger — never themed */
   --color-mint: #34D399;   /* FIXED: restored / good — never themed */
   --color-amber-status: #FFB020; /* scheduled status */
 
-  --color-white: #F2F3F7;
-  --color-gray: #C7CCDA;
-  --color-gray-dim: #9AA1B5;
+  --color-white: #F5F3FA;
+  --color-gray: #C9C3DA;
+  --color-gray-dim: #8B84A3;
 
   /* Legacy tokens — admin panel only, unchanged from before */
   --color-ink: #12181f;
@@ -51,7 +56,9 @@
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(ellipse 900px 500px at 20% 0%, #14033a 0%, var(--background) 55%),
+    var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
 }
@@ -61,36 +68,34 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Glass card base — public pages only */
+/* Glass card — public pages only */
 .glass {
-  background: var(--color-glass);
+  background: linear-gradient(145deg, rgba(25,5,60,0.90), rgba(8,2,30,0.95));
   border: 1px solid var(--color-glass-border);
-  border-radius: 18px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-
-/* Ambient background glow orbs */
-.orb {
-  position: fixed; border-radius: 9999px; filter: blur(90px); pointer-events: none; z-index: 0; opacity: 0.35;
-}
-.orb-1 { width: 500px; height: 500px; background: #FFB020; top: -150px; left: -100px; }
-.orb-2 { width: 420px; height: 420px; background: #FF6B35; top: 200px; right: -150px; opacity: 0.22; }
-.orb-3 { width: 380px; height: 380px; background: #F87171; bottom: 100px; left: 30%; opacity: 0.12; }
-
-.glow-divider {
-  height: 1px; position: relative; z-index: 1;
-  background: linear-gradient(90deg, transparent, rgba(255,176,32,0.5) 20%, rgba(255,107,53,0.5) 50%, rgba(255,176,32,0.5) 80%, transparent);
+  border-radius: 14px;
+  box-shadow: 0 0 10px rgba(180,0,255,0.20), 0 0 30px rgba(180,0,255,0.08), inset 0 0 20px rgba(150,0,255,0.04);
 }
 
 .glow-text {
-  background: linear-gradient(120deg, #FFB020, #FF6B35 60%, #FFD700);
+  background: linear-gradient(120deg, #FF17C9, #A020F0);
   -webkit-background-clip: text; background-clip: text; color: transparent;
-  filter: drop-shadow(0 0 26px rgba(255,107,53,0.45));
+  filter: drop-shadow(0 0 18px rgba(255,23,201,0.4));
 }
 
 .glow-badge-cta {
-  box-shadow: 0 0 30px rgba(255,176,32,0.35);
+  box-shadow: 0 0 22px rgba(255,23,201,0.45);
+}
+
+.glow-divider {
+  height: 1px; position: relative; z-index: 1;
+  background: linear-gradient(90deg, transparent, rgba(255,23,201,0.4) 20%, rgba(160,32,240,0.4) 50%, rgba(255,23,201,0.4) 80%, transparent);
+}
+
+/* 3D tilt-on-hover for cards (lightweight CSS approach, agreed direction) */
+.tilt-card {
+  transition: transform 0.15s ease-out, box-shadow 0.2s ease-out;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
 @media (prefers-reduced-motion: no-preference) {
