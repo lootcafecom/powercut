@@ -1,10 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
 import { getHomepageStats, getOutagesForCity, getCityBySlug, getAllLocalities, getCityDirectory } from "@/lib/db/queries";
 import { computeOutageStatus, statusLabels } from "@/lib/outage-status";
 import { formatTimeIST } from "@/lib/format";
 import { siteConfig } from "@/lib/config/site";
 import { MapLoader, type MapMarker } from "@/components/map/map-loader";
-import { HeroIllustration } from "@/components/hero/hero-illustration";
 import { TiltCard } from "@/components/ui/tilt-card";
 import { LightningIcon } from "@/components/icons/lightning";
 import { ShieldIcon, BellIcon, LocationIcon, CalendarIcon } from "@/components/icons";
@@ -145,7 +145,15 @@ export default async function HomePage() {
           </div>
 
           <div>
-            <HeroIllustration className="w-full h-auto max-h-[280px] mb-6" />
+            <div className="relative w-full aspect-[16/10] mb-6 rounded-2xl overflow-hidden">
+              <Image
+                src="/images/india-electricity-map.png"
+                alt="India electricity grid map with glowing outage points"
+                fill
+                priority
+                className="object-cover"
+              />
+            </div>
 
             {/* Floating glass stats widget, 3D tilt */}
             <TiltCard maxTilt={4} glowColor="rgba(255,23,201,0.3)">
