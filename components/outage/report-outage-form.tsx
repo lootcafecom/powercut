@@ -79,7 +79,7 @@ export function ReportOutageForm({ localities }: { localities: Locality[] }) {
           value={localityId}
           onChange={(e) => setLocalityId(e.target.value)}
           required
-          className="flex-1 rounded-md border border-glass-border bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-amber-status focus:outline-none"
+          className="flex-1 rounded-md border border-glass-border bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-purple focus:outline-none"
         >
           <option value="">Select your locality</option>
           {localities.map((l) => (
@@ -94,7 +94,7 @@ export function ReportOutageForm({ localities }: { localities: Locality[] }) {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Optional note"
           maxLength={300}
-          className="flex-1 rounded-md border border-glass-border bg-white/[0.03] px-3 py-2 text-sm text-white placeholder:text-gray-dim focus:border-amber-status focus:outline-none"
+          className="flex-1 rounded-md border border-glass-border bg-white/[0.03] px-3 py-2 text-sm text-white placeholder:text-gray-dim focus:border-purple focus:outline-none"
         />
       </div>
       {errorMsg && <p className="mt-2 text-xs text-pink">{errorMsg}</p>}

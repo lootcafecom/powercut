@@ -95,6 +95,35 @@ rows into `states`/`cities`/`localities` and the page works immediately.
 
 ## Design: Cyberpunk neon (magenta/purple) — current theme
 
+### Visual polish pass: full color consistency + 3D tilt + SVG illustration
+
+After the initial cyberpunk port, an audit found leftover Theme A
+amber/copper colors still mixed into brand elements (the logo badge,
+CTA buttons, active nav underline, hero badge) — these were never fully
+migrated in the first pass. Fixed everywhere `grep` found them: logo,
+header "Report Outage" button, hero "Check status" button, "see
+coverage" link, locality chip badges, tab active-state indicator, form
+input focus borders. The deliberate exception: `amber-status` stays
+wherever it's a genuine **status** color (scheduled outages, the
+"unverified" caution badge, preparation tips) — that's semantic, not
+brand, and stays consistent with the fixed red/green rule.
+
+- **Real 3D**: `components/ui/tilt-card.tsx` — a client component doing
+  actual mouse-tracking perspective tilt (not a static CSS hover),
+  applied to the hero stats widget, About/How-it-works cards, and city
+  directory tiles. Three.js/WebGL was considered but scoped out as a
+  separate, heavier effort — this CSS-only approach works everywhere
+  including weaker mobile devices, which matters for a utility site.
+- **Hero illustration**: `components/hero/hero-illustration.tsx` — a
+  detailed layered SVG (isometric-style city blocks with 3 faces each
+  for pseudo-3D depth, a lattice transmission tower, a glowing power
+  core) replacing the earlier bare CSS-div illustration. Built as
+  original SVG rather than a found photo, both to avoid licensing
+  questions and to match the exact palette.
+- **Icons**: emoji replaced with real SVG icon components
+  (`components/icons/`) plus `drop-shadow` glow filters.
+
+
 Ported from an approved static HTML demo into `app/globals.css`. Same
 fixed rule as every previous theme iteration: red (`#F87171`) =
 ongoing/danger, green (`#34D399`) = restored/good, never themed — only

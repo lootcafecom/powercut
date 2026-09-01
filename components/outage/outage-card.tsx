@@ -124,7 +124,7 @@ export function OutageCard({ outage }: { outage: OutageCardData }) {
             href={outage.sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-3 inline-block text-xs font-medium text-cyan underline underline-offset-2 hover:text-amber-status"
+            className="mt-3 inline-block text-xs font-medium text-cyan underline underline-offset-2 hover:text-purple"
           >
             View official source ↗
           </a>

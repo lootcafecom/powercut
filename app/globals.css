@@ -82,6 +82,10 @@ body {
   filter: drop-shadow(0 0 18px rgba(255,23,201,0.4));
 }
 
+.glow-heading {
+  text-shadow: 0 0 16px rgba(255,23,201,0.35), 0 0 32px rgba(160,32,240,0.18);
+}
+
 .glow-badge-cta {
   box-shadow: 0 0 22px rgba(255,23,201,0.45);
 }

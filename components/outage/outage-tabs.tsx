@@ -32,9 +32,9 @@ export function OutageTabs({
             role="tab"
             aria-selected={active === tab.key}
             onClick={() => setActive(tab.key)}
-            className={`px-4 py-2.5 text-sm font-semibold uppercase tracking-wide transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-status ${
+            className={`px-4 py-2.5 text-sm font-semibold uppercase tracking-wide transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple ${
               active === tab.key
-                ? "border-b-2 border-amber-status text-white"
+                ? "border-b-2 border-purple text-white"
                 : "text-gray-dim hover:text-white"
             }`}
           >

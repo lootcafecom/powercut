@@ -32,8 +32,8 @@ function SiteHeader() {
           <span
             className="w-9 h-9 rounded-[11px] mr-3 flex items-center justify-center text-lg"
             style={{
-              background: "linear-gradient(135deg, #FFB020, #FF6B35)",
-              boxShadow: "0 0 24px rgba(255,176,32,0.55), 0 0 50px rgba(255,107,53,0.25)",
+              background: "linear-gradient(135deg, #FF17C9, #A020F0)",
+              boxShadow: "0 0 24px rgba(255,23,201,0.55), 0 0 50px rgba(160,32,240,0.3)",
               color: "#05060A",
             }}
           >
@@ -59,7 +59,7 @@ function SiteHeader() {
           <span className="mr-5"><SignOutButton /></span>
           <Link
             href="/power-cut/karnataka/bengaluru"
-            className="glass rounded-[10px] px-4 py-2 text-sm font-bold text-white hover:shadow-[0_0_20px_rgba(255,176,32,0.4)] transition-shadow"
+            className="glass rounded-[10px] px-4 py-2 text-sm font-bold text-white hover:shadow-[0_0_20px_rgba(255,23,201,0.4)] transition-shadow"
           >
             Report Outage
           </Link>
@@ -85,7 +85,7 @@ function SiteFooter() {
           <div className="flex items-center">
             <span
               className="w-6.5 h-6.5 rounded-lg mr-2 flex items-center justify-center text-xs"
-              style={{ background: "linear-gradient(135deg, #FFB020, #FF6B35)", color: "#05060A" }}
+              style={{ background: "linear-gradient(135deg, #FF17C9, #A020F0)", color: "#05060A" }}
             >
               ⚡
             </span>
