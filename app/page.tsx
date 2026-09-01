@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getHomepageStats, getOutagesForCity, getCityBySlug, getAllLocalities, getCityDirectory } from "@/lib/db/queries";
+import { getHomepageStats, getOutagesForCity, getCityBySlug, getAllLocalities, getCityDirectory, getAllStates, getAllProviders } from "@/lib/db/queries";
 import { computeOutageStatus, statusLabels } from "@/lib/outage-status";
 import { formatTimeIST } from "@/lib/format";
 import { siteConfig } from "@/lib/config/site";
@@ -29,6 +29,12 @@ const UPCOMING_CITIES = [
   "Delhi", "Mumbai", "Chennai", "Kolkata", "Hyderabad", "Pune", "Ahmedabad",
 ];
 
+// Same honesty pattern as UPCOMING_CITIES — real state names, not DB rows,
+// shown only as a roadmap indicator until real per-state data exists.
+const UPCOMING_STATES = [
+  "Maharashtra", "Delhi", "Tamil Nadu", "Telangana", "West Bengal", "Uttar Pradesh",
+];
+
 export default async function HomePage() {
   const stats = await getHomepageStats();
   const bengaluru = await getCityBySlug("karnataka", "bengaluru");
@@ -38,6 +44,8 @@ export default async function HomePage() {
     ? allLocalities.filter((l) => l.cityId === bengaluru.city.id)
     : [];
   const cityDirectory = await getCityDirectory();
+  const allStates = await getAllStates();
+  const allProviders = await getAllProviders();
 
   const cards = outageRows.map(({ outage, locality, provider }) => ({
     id: outage.id,
@@ -82,11 +90,24 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/* HERO */}
-      <div className="mx-auto max-w-[1280px] px-10 pt-8 pb-2">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
-          <div>
-            <div className="inline-flex items-center rounded-full border border-magenta/30 bg-magenta/10 px-3.5 py-1.5 mb-5 text-[11.5px] font-extrabold tracking-wide text-magenta">
+      {/* HERO — full-width background image with content overlaid */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/images/india-electricity-map.png"
+            alt="India electricity grid map with glowing outage points"
+            fill
+            priority
+            className="object-cover"
+          />
+          {/* Gradient overlay so text stays readable over the image */}
+          <div className="absolute inset-0 bg-gradient-to-r from-bg-deep via-bg-deep/85 to-bg-deep/40" />
+          <div className="absolute inset-0 bg-gradient-to-t from-bg-deep via-transparent to-bg-deep/60" />
+        </div>
+
+        <div className="relative mx-auto max-w-[1280px] px-10 pt-16 pb-14">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center rounded-full border border-magenta/30 bg-magenta/10 px-3.5 py-1.5 mb-5 text-[11.5px] font-extrabold tracking-wide text-magenta backdrop-blur-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-mint mr-2 pulse-dot shadow-[0_0_8px_#34D399]" />
               LIVE IN BENGALURU
             </div>
@@ -142,63 +163,53 @@ export default async function HomePage() {
                 see coverage →
               </Link>
             </p>
-          </div>
 
-          <div>
-            <div className="relative w-full aspect-[16/10] mb-6 rounded-2xl overflow-hidden">
-              <Image
-                src="/images/india-electricity-map.png"
-                alt="India electricity grid map with glowing outage points"
-                fill
-                priority
-                className="object-cover"
-              />
-            </div>
-
-            {/* Floating glass stats widget, 3D tilt */}
-            <TiltCard maxTilt={4} glowColor="rgba(255,23,201,0.3)">
-              <div className="glass p-6 sm:p-7">
-                <div className="flex items-center justify-between flex-wrap gap-4 pb-5 mb-5 border-b border-glass-border">
-                  <span className="inline-flex items-center text-[11px] font-extrabold text-mint">
-                    <span className="w-1.5 h-1.5 rounded-full bg-mint mr-2 pulse-dot shadow-[0_0_10px_#34D399]" />
-                    LIVE RIGHT NOW
-                  </span>
-                  <div className="flex gap-8">
-                    <Stat value={stats.ongoingCount} label="Ongoing" colorClass="text-pink" />
-                    <Stat value={stats.todayCount} label="Scheduled Today" colorClass="text-white" />
-                    <Stat value={restoredCount} label="Restored · 24h" colorClass="text-mint" />
-                  </div>
-                </div>
-
-                {liveReports.length === 0 ? (
-                  <p className="text-sm text-gray-dim py-2">No published outages right now.</p>
-                ) : (
-                  liveReports.map((r) => (
-                    <div key={r.id} className="flex items-center justify-between py-3 border-b border-glass-border last:border-0">
-                      <div className="flex items-center">
-                        <span
-                          className={`w-2 h-2 rounded-full mr-3 shrink-0 ${
-                            r.status === "ongoing" ? "bg-pink shadow-[0_0_10px_#F87171]"
-                            : r.status === "restored" ? "bg-mint shadow-[0_0_10px_#34D399]"
-                            : "bg-amber-status shadow-[0_0_10px_#FFB020]"
-                          }`}
-                        />
-                        <div>
-                          <p className="text-sm font-bold text-white">{r.locality}</p>
-                          <p className="text-[11.5px] text-gray-dim mt-0.5">
-                            <span className={`font-bold ${STATUS_TEXT_CLASS[r.status]}`}>
-                              {statusLabels[r.status]}
-                            </span>{" "}
-                            · {formatTimeIST(r.startTime)}–{formatTimeIST(r.endTime)}
-                          </p>
-                        </div>
-                      </div>
-                      <span className="text-xs text-gray-dim">{r.provider}</span>
+            <div className="relative mt-11">
+              {/* Floating glass stats widget, 3D tilt */}
+              <TiltCard maxTilt={4} glowColor="rgba(255,23,201,0.3)">
+                <div className="glass p-6 sm:p-7">
+                  <div className="flex items-center justify-between flex-wrap gap-4 pb-5 mb-5 border-b border-glass-border">
+                    <span className="inline-flex items-center text-[11px] font-extrabold text-mint">
+                      <span className="w-1.5 h-1.5 rounded-full bg-mint mr-2 pulse-dot shadow-[0_0_10px_#34D399]" />
+                      LIVE RIGHT NOW
+                    </span>
+                    <div className="flex gap-8">
+                      <Stat value={stats.ongoingCount} label="Ongoing" colorClass="text-pink" />
+                      <Stat value={stats.todayCount} label="Scheduled Today" colorClass="text-white" />
+                      <Stat value={restoredCount} label="Restored · 24h" colorClass="text-mint" />
                     </div>
-                  ))
-                )}
-              </div>
-            </TiltCard>
+                  </div>
+
+                  {liveReports.length === 0 ? (
+                    <p className="text-sm text-gray-dim py-2">No published outages right now.</p>
+                  ) : (
+                    liveReports.map((r) => (
+                      <div key={r.id} className="flex items-center justify-between py-3 border-b border-glass-border last:border-0">
+                        <div className="flex items-center">
+                          <span
+                            className={`w-2 h-2 rounded-full mr-3 shrink-0 ${
+                              r.status === "ongoing" ? "bg-pink shadow-[0_0_10px_#F87171]"
+                              : r.status === "restored" ? "bg-mint shadow-[0_0_10px_#34D399]"
+                              : "bg-amber-status shadow-[0_0_10px_#FFB020]"
+                            }`}
+                          />
+                          <div>
+                            <p className="text-sm font-bold text-white">{r.locality}</p>
+                            <p className="text-[11.5px] text-gray-dim mt-0.5">
+                              <span className={`font-bold ${STATUS_TEXT_CLASS[r.status]}`}>
+                                {statusLabels[r.status]}
+                              </span>{" "}
+                              · {formatTimeIST(r.startTime)}–{formatTimeIST(r.endTime)}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-xs text-gray-dim">{r.provider}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </TiltCard>
+            </div>
           </div>
         </div>
       </div>
@@ -241,6 +252,72 @@ export default async function HomePage() {
               <span className="text-[10px] font-extrabold text-gray-dim uppercase tracking-wide">Coming Soon</span>
             </span>
           ))}
+        </div>
+      </div>
+
+      {/* BROWSE BY STATE */}
+      <div className="mx-auto max-w-[1280px] px-10 mb-12">
+        <h2 className="text-xl font-extrabold mb-1 glow-heading">Browse by State</h2>
+        <p className="text-sm text-gray-dim mb-5">
+          Real outage counts for states we cover — others shown as roadmap, not fabricated data.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          {allStates.map((s) => (
+            <TiltCard key={s.id} maxTilt={8} glowColor="rgba(160,32,240,0.3)">
+              <Link href={`/power-cut/${s.slug}/bengaluru`} className="glass px-5 py-4 flex flex-col min-w-[140px]">
+                <span className="font-bold text-sm text-white mb-1">{s.name}</span>
+                <span className="text-2xl font-extrabold text-magenta">{stats.totalPublished}</span>
+                <span className="text-[10px] font-bold text-gray-dim uppercase tracking-wide">Tracked Outages</span>
+              </Link>
+            </TiltCard>
+          ))}
+          {UPCOMING_STATES.map((name) => (
+            <span
+              key={name}
+              className="glass px-5 py-4 flex flex-col min-w-[140px] opacity-50 cursor-not-allowed"
+              title="Coming soon — not covered yet"
+            >
+              <span className="font-bold text-sm text-white mb-1">{name}</span>
+              <span className="text-[10px] font-extrabold text-gray-dim uppercase tracking-wide">Coming Soon</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* DISCOM FINDER */}
+      <div className="mx-auto max-w-[1280px] px-10 mb-12">
+        <h2 className="text-xl font-extrabold mb-1 glow-heading">Find Your Electricity Provider</h2>
+        <p className="text-sm text-gray-dim mb-5">
+          Real provider info for covered areas — no directory of unverified DISCOM details.
+        </p>
+        <div className="glass p-6">
+          {allProviders.map((p) => (
+            <div key={p.id} className="flex flex-wrap items-center gap-6">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-magenta/10 border border-magenta/30 flex items-center justify-center">
+                  <LightningIcon className="w-5 h-5 text-yellow drop-shadow-[0_0_6px_rgba(255,212,0,0.7)]" filled />
+                </div>
+                <div>
+                  <p className="font-extrabold text-white">{p.shortName}</p>
+                  <p className="text-xs text-gray-dim">{p.name}</p>
+                </div>
+              </div>
+              {p.customerCarePhone && (
+                <div>
+                  <p className="text-[10px] font-bold text-gray-dim uppercase tracking-wide">Helpline</p>
+                  <p className="text-sm font-bold text-mint">{p.customerCarePhone}</p>
+                </div>
+              )}
+              {p.website && (
+                <a href={p.website} target="_blank" rel="noopener noreferrer" className="text-sm text-purple font-semibold ml-auto">
+                  Official website →
+                </a>
+              )}
+            </div>
+          ))}
+          <p className="text-xs text-gray-dim mt-4 pt-4 border-t border-glass-border">
+            Serves Karnataka (Bengaluru). More DISCOMs added as we cover more states — never listed without verified contact details.
+          </p>
         </div>
       </div>
 

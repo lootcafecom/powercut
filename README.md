@@ -19,6 +19,25 @@ segfault the same way, and it matches what the original spec asked for.
 It also means you don't need a persistent volume at all — use any hosted
 Postgres (Neon and Supabase both have workable free tiers).
 
+## Homepage: national plan, real execution
+
+A detailed India-wide plan (search-first hero, State→City→Area→Pincode
+hierarchy, DISCOM finder, reliability scores, national stats) was
+provided as a reference. Adopted the good architecture ideas, rejected
+the fabricated data:
+
+- **Hero**: now a full-width background image (`public/images/`) with
+  a gradient overlay, not a two-column layout — content sits on top.
+- **Browse by State**: real states from the database shown with real
+  tracked-outage counts (`getAllStates()`), plus `UPCOMING_STATES` — a
+  hardcoded display-only array of real state names marked "Coming Soon"
+  (same pattern as `UPCOMING_CITIES`, NOT database rows).
+- **DISCOM Finder**: real provider data (`getAllProviders()`) — BESCOM's
+  actual name, helpline, and website. No fabricated DISCOM directory.
+- **Not built**: national stats (586 ongoing etc.), reliability scores,
+  news section, FAQ — these need either real historical data at scale
+  or more research per-DISCOM, deliberately deferred rather than faked.
+
 ## Getting started
 
 ```bash
