@@ -99,21 +99,22 @@ export default async function HomePage({
 
   return (
     <div>
-      {/* HERO — full-width background image with content overlaid */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0">
+      {/* HERO — full-width image at its exact aspect ratio (zero cropping,
+          guaranteed regardless of viewport width), text overlaps the
+          lower portion where the gradient fade keeps it readable. */}
+      <div className="relative">
+        <div className="relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/images/india-electricity-map.png"
             alt="India electricity grid map with glowing outage points"
-            className="absolute inset-0 w-full h-full object-cover"
+            className="w-full aspect-[1717/916] object-cover object-center"
           />
-          {/* Gradient overlay so text stays readable over the image */}
-          <div className="absolute inset-0 bg-gradient-to-r from-bg-deep via-bg-deep/85 to-bg-deep/40" />
-          <div className="absolute inset-0 bg-gradient-to-t from-bg-deep via-transparent to-bg-deep/60" />
+          <div className="absolute inset-0 bg-gradient-to-t from-bg-deep via-bg-deep/50 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-bg-deep/75 via-bg-deep/25 to-transparent" />
         </div>
 
-        <div className="relative mx-auto max-w-[1280px] px-10 pt-16 pb-14">
+        <div className="relative mx-auto max-w-[1280px] px-10 -mt-[220px] sm:-mt-[300px] pb-14">
           <div className="max-w-2xl">
             <div className="inline-flex items-center rounded-full border border-magenta/30 bg-magenta/10 px-3.5 py-1.5 mb-5 text-[11.5px] font-extrabold tracking-wide text-magenta backdrop-blur-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-mint mr-2 pulse-dot shadow-[0_0_8px_#34D399]" />
@@ -151,16 +152,16 @@ export default async function HomePage({
             <div className="flex max-w-xl mb-4 flex-col sm:flex-row">
               <Link
                 href="/power-cut/karnataka/bengaluru"
-                className="flex-1 rounded-2xl py-4 font-bold text-sm flex items-center justify-center gap-2 border border-pink/40 bg-pink/8 text-pink mb-2.5 sm:mb-0 hover:shadow-[0_0_26px_rgba(248,113,113,0.3)] transition-shadow"
+                className="flex-1 rounded-2xl py-4 font-bold text-sm flex items-center justify-center gap-2 bg-pink text-white mb-2.5 sm:mb-0 hover:shadow-[0_0_26px_rgba(248,113,113,0.5)] hover:brightness-105 transition-all"
               >
-                <LightningIcon className="w-4 h-4 drop-shadow-[0_0_6px_rgba(248,113,113,0.8)]" filled />
+                <LightningIcon className="w-4 h-4" filled />
                 Report Outage
               </Link>
               <Link
                 href="/power-cut/karnataka/bengaluru"
-                className="flex-1 sm:ml-3 rounded-2xl py-4 font-bold text-sm flex items-center justify-center gap-2 border border-mint/35 bg-mint/6 text-mint hover:shadow-[0_0_26px_rgba(52,211,153,0.25)] transition-shadow"
+                className="flex-1 sm:ml-3 rounded-2xl py-4 font-bold text-sm flex items-center justify-center gap-2 bg-mint text-bg-deep hover:shadow-[0_0_26px_rgba(52,211,153,0.5)] hover:brightness-105 transition-all"
               >
-                <ShieldIcon className="w-4 h-4 drop-shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+                <ShieldIcon className="w-4 h-4" />
                 Power is Back
               </Link>
             </div>
@@ -238,34 +239,71 @@ export default async function HomePage({
         </div>
       </div>
 
-      {/* BROWSE BY STATE + TOMORROW'S SCHEDULE */}
+      {/* BROWSE BY STATE — standalone, full width */}
+      <div className="mx-auto max-w-[1280px] px-10 mb-12">
+        <h2 className="text-xl font-extrabold mb-1 glow-heading">Browse by State</h2>
+        <p className="text-sm text-gray-dim mb-5">
+          Real outage counts for states we cover — others shown as roadmap, not fabricated data.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          {allStates.map((s) => (
+            <TiltCard key={s.id} maxTilt={8} glowColor="rgba(160,32,240,0.3)">
+              <Link href={`/power-cut/${s.slug}/bengaluru`} className="glass px-5 py-4 flex flex-col min-w-[140px]">
+                <span className="font-bold text-sm text-white mb-1">{s.name}</span>
+                <span className="text-2xl font-extrabold text-magenta">{stats.totalPublished}</span>
+                <span className="text-[10px] font-bold text-gray-dim uppercase tracking-wide">Tracked Outages</span>
+              </Link>
+            </TiltCard>
+          ))}
+          {UPCOMING_STATES.map((name) => (
+            <span
+              key={name}
+              className="glass px-5 py-4 flex flex-col min-w-[140px] opacity-50 cursor-not-allowed"
+              title="Coming soon — not covered yet"
+            >
+              <span className="font-bold text-sm text-white mb-1">{name}</span>
+              <span className="text-[10px] font-extrabold text-gray-dim uppercase tracking-wide">Coming Soon</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* TODAY + TOMORROW — one row, side by side */}
       <div className="mx-auto max-w-[1280px] px-10 mb-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
-            <h2 className="text-xl font-extrabold mb-1 glow-heading">Browse by State</h2>
-            <p className="text-sm text-gray-dim mb-5">
-              Real outage counts for states we cover — others shown as roadmap, not fabricated data.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              {allStates.map((s) => (
-                <TiltCard key={s.id} maxTilt={8} glowColor="rgba(160,32,240,0.3)">
-                  <Link href={`/power-cut/${s.slug}/bengaluru`} className="glass px-5 py-4 flex flex-col min-w-[140px]">
-                    <span className="font-bold text-sm text-white mb-1">{s.name}</span>
-                    <span className="text-2xl font-extrabold text-magenta">{stats.totalPublished}</span>
-                    <span className="text-[10px] font-bold text-gray-dim uppercase tracking-wide">Tracked Outages</span>
-                  </Link>
-                </TiltCard>
-              ))}
-              {UPCOMING_STATES.map((name) => (
-                <span
-                  key={name}
-                  className="glass px-5 py-4 flex flex-col min-w-[140px] opacity-50 cursor-not-allowed"
-                  title="Coming soon — not covered yet"
-                >
-                  <span className="font-bold text-sm text-white mb-1">{name}</span>
-                  <span className="text-[10px] font-extrabold text-gray-dim uppercase tracking-wide">Coming Soon</span>
-                </span>
-              ))}
+            <div className="flex items-baseline justify-between mb-5">
+              <h2 className="text-xl font-extrabold glow-heading">Power Cuts Today</h2>
+              <Link href="/power-cut/karnataka/bengaluru" className="text-purple text-sm font-semibold">View All →</Link>
+            </div>
+            <div className="glass p-5">
+              {liveReports.length === 0 ? (
+                <p className="text-sm text-gray-dim py-2">No published outages right now.</p>
+              ) : (
+                liveReports.map((r) => (
+                  <div key={r.id} className="flex items-center justify-between py-3 border-b border-glass-border last:border-0">
+                    <div className="flex items-center">
+                      <span
+                        className={`w-2 h-2 rounded-full mr-3 shrink-0 ${
+                          r.status === "ongoing" ? "bg-pink shadow-[0_0_10px_#F87171]"
+                          : r.status === "restored" ? "bg-mint shadow-[0_0_10px_#34D399]"
+                          : "bg-amber-status shadow-[0_0_10px_#FFB020]"
+                        }`}
+                      />
+                      <div>
+                        <p className="text-sm font-bold text-white">{r.locality}</p>
+                        <p className="text-[11.5px] text-gray-dim mt-0.5">
+                          <span className={`font-bold ${STATUS_TEXT_CLASS[r.status]}`}>
+                            {statusLabels[r.status]}
+                          </span>{" "}
+                          · {formatTimeIST(r.startTime)}–{formatTimeIST(r.endTime)}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-dim">{r.provider}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -339,59 +377,25 @@ export default async function HomePage({
         </div>
       </div>
 
-      {/* LIVE MAP + POWER CUTS TODAY */}
+      {/* LIVE POWER OUTAGE MAP — single column, full width */}
       <div className="mx-auto max-w-[1280px] px-10 mb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-6">
-          <div>
-            <div className="flex items-baseline justify-between mb-5">
-              <h2 className="text-xl font-extrabold glow-heading">Live Power Outage Map</h2>
-            </div>
-            <div className="glass overflow-hidden">
-              <div className="flex items-center justify-between px-6 py-5 border-b border-glass-border">
-                <h3 className="text-[13px] font-extrabold tracking-wide">LIVE GRID STATUS</h3>
-                <span className="inline-flex items-center text-xs font-extrabold text-mint">
-                  <span className="w-1.5 h-1.5 rounded-full bg-mint mr-1.5 pulse-dot shadow-[0_0_8px_#34D399]" />
-                  LIVE
-                </span>
-              </div>
-              <MapLoader center={[22.0, 79.0]} zoom={4} markers={indiaMarkers} heightClassName="h-96" />
-            </div>
+        <div className="flex items-baseline justify-between mb-5">
+          <h2 className="text-xl font-extrabold glow-heading">Live Power Outage Map</h2>
+        </div>
+        <div className="glass overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-glass-border">
+            <h3 className="text-[13px] font-extrabold tracking-wide">LIVE GRID STATUS</h3>
+            <span className="inline-flex items-center text-xs font-extrabold text-mint">
+              <span className="w-1.5 h-1.5 rounded-full bg-mint mr-1.5 pulse-dot shadow-[0_0_8px_#34D399]" />
+              LIVE
+            </span>
           </div>
-
-          <div>
-            <div className="flex items-baseline justify-between mb-5">
-              <h2 className="text-xl font-extrabold glow-heading">Power Cuts Today</h2>
-              <Link href="/power-cut/karnataka/bengaluru" className="text-purple text-sm font-semibold">View All →</Link>
-            </div>
-            <div className="glass p-5">
-              {liveReports.length === 0 ? (
-                <p className="text-sm text-gray-dim py-2">No published outages right now.</p>
-              ) : (
-                liveReports.map((r) => (
-                  <div key={r.id} className="flex items-center justify-between py-3 border-b border-glass-border last:border-0">
-                    <div className="flex items-center">
-                      <span
-                        className={`w-2 h-2 rounded-full mr-3 shrink-0 ${
-                          r.status === "ongoing" ? "bg-pink shadow-[0_0_10px_#F87171]"
-                          : r.status === "restored" ? "bg-mint shadow-[0_0_10px_#34D399]"
-                          : "bg-amber-status shadow-[0_0_10px_#FFB020]"
-                        }`}
-                      />
-                      <div>
-                        <p className="text-sm font-bold text-white">{r.locality}</p>
-                        <p className="text-[11.5px] text-gray-dim mt-0.5">
-                          <span className={`font-bold ${STATUS_TEXT_CLASS[r.status]}`}>
-                            {statusLabels[r.status]}
-                          </span>{" "}
-                          · {formatTimeIST(r.startTime)}–{formatTimeIST(r.endTime)}
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-xs text-gray-dim">{r.provider}</span>
-                  </div>
-                ))
-              )}
-            </div>
+          <MapLoader center={[22.0, 79.0]} zoom={4} markers={indiaMarkers} heightClassName="h-[480px]" />
+          <div className="flex flex-wrap gap-5 px-6 py-4 border-t border-glass-border">
+            <LegendDot color="bg-pink" shadow="shadow-[0_0_8px_#F87171]" label="Ongoing" />
+            <LegendDot color="bg-amber-status" shadow="shadow-[0_0_8px_#FFB020]" label="Scheduled" />
+            <LegendDot color="bg-mint" shadow="shadow-[0_0_8px_#34D399]" label="Restored" />
+            <LegendDot color="bg-gray-dim" shadow="" label="Not covered yet" muted />
           </div>
         </div>
       </div>
@@ -521,6 +525,25 @@ export default async function HomePage({
         </div>
       </div>
     </div>
+  );
+}
+
+function LegendDot({
+  color,
+  shadow,
+  label,
+  muted,
+}: {
+  color: string;
+  shadow: string;
+  label: string;
+  muted?: boolean;
+}) {
+  return (
+    <span className={`flex items-center gap-1.5 text-xs ${muted ? "text-gray-dim opacity-60" : "text-gray-dim"}`}>
+      <span className={`w-2 h-2 rounded-full ${color} ${shadow}`} />
+      {label}
+    </span>
   );
 }
 
