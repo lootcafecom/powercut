@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { getHomepageStats, getOutagesForCity, getCityBySlug, getAllLocalities, getCityDirectory, getAllStates, getAllProviders } from "@/lib/db/queries";
 import { computeOutageStatus, statusLabels } from "@/lib/outage-status";
@@ -103,12 +102,11 @@ export default async function HomePage({
       {/* HERO — full-width background image with content overlaid */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0">
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src="/images/india-electricity-map.png"
             alt="India electricity grid map with glowing outage points"
-            fill
-            priority
-            className="object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
           />
           {/* Gradient overlay so text stays readable over the image */}
           <div className="absolute inset-0 bg-gradient-to-r from-bg-deep via-bg-deep/85 to-bg-deep/40" />

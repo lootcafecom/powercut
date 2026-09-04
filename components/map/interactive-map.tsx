@@ -58,9 +58,17 @@ export function InteractiveMap({
         style={{ height: "100%", width: "100%", background: "#06142D" }}
       >
         <TileLayer
-          // Dark tiles to match the site theme — free, attribution required.
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          // Carto's free basemap tiles started requiring an API key on
+          // ~Aug 28, 2026 (a real, dated, external change — confirmed
+          // across multiple unrelated projects hitting the same break
+          // that week). Esri's Dark Gray Canvas remains free/keyless and
+          // is what other affected projects switched to for the same
+          // reason — no signup required.
+          url="https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+          attribution='&copy; <a href="https://www.esri.com">Esri</a> &mdash; Esri, HERE, Garmin, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        <TileLayer
+          url="https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}"
         />
         {markers.map((m) => (
           <Marker
