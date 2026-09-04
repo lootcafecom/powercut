@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getHomepageStats, getOutagesForCity, getCityBySlug, getAllLocalities, getCityDirectory, getAllStates, getAllProviders } from "@/lib/db/queries";
 import { computeOutageStatus, statusLabels } from "@/lib/outage-status";
-import { formatTimeIST } from "@/lib/format";
+import { formatTimeIST, isSameISTDate } from "@/lib/format";
 import { siteConfig } from "@/lib/config/site";
 import { MapLoader, type MapMarker } from "@/components/map/map-loader";
 import { TiltCard } from "@/components/ui/tilt-card";
@@ -35,7 +35,15 @@ const UPCOMING_STATES = [
   "Maharashtra", "Delhi", "Tamil Nadu", "Telangana", "West Bengal", "Uttar Pradesh",
 ];
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ pincode_notfound?: string; pincode_invalid?: string }>;
+}) {
+  const params = await searchParams;
+  const pincodeNotFound = params.pincode_notfound;
+  const pincodeInvalid = params.pincode_invalid;
+
   const stats = await getHomepageStats();
   const bengaluru = await getCityBySlug("karnataka", "bengaluru");
   const outageRows = bengaluru ? await getOutagesForCity(bengaluru.city.id) : [];
@@ -62,6 +70,8 @@ export default async function HomePage() {
     .slice(0, 4);
 
   const restoredCount = cards.filter((c) => c.status === "restored").length;
+
+  const tomorrowOutages = cards.filter((c) => isSameISTDate(c.startTime, 1));
 
   const countsByLocality = new Map<number, number>();
   for (const c of cards) {
@@ -157,60 +167,35 @@ export default async function HomePage() {
               </Link>
             </div>
 
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="text-xs text-gray-dim mr-1">Popular Searches:</span>
+              <Link href="/power-cut/karnataka/bengaluru" className="glass px-3 py-1.5 rounded-full text-xs font-semibold text-white">
+                Bengaluru
+              </Link>
+              {UPCOMING_CITIES.slice(0, 5).map((name) => (
+                <span key={name} className="glass px-3 py-1.5 rounded-full text-xs font-semibold text-gray-dim opacity-50 cursor-not-allowed" title="Coming soon">
+                  {name}
+                </span>
+              ))}
+            </div>
+
             <p className="text-xs text-gray-dim">
               {stats.localitiesCovered} localities covered so far ·{" "}
               <Link href="/power-cut/karnataka/bengaluru" className="text-purple font-semibold">
                 see coverage →
               </Link>
             </p>
-
-            <div className="relative mt-11">
-              {/* Floating glass stats widget, 3D tilt */}
-              <TiltCard maxTilt={4} glowColor="rgba(255,23,201,0.3)">
-                <div className="glass p-6 sm:p-7">
-                  <div className="flex items-center justify-between flex-wrap gap-4 pb-5 mb-5 border-b border-glass-border">
-                    <span className="inline-flex items-center text-[11px] font-extrabold text-mint">
-                      <span className="w-1.5 h-1.5 rounded-full bg-mint mr-2 pulse-dot shadow-[0_0_10px_#34D399]" />
-                      LIVE RIGHT NOW
-                    </span>
-                    <div className="flex gap-8">
-                      <Stat value={stats.ongoingCount} label="Ongoing" colorClass="text-pink" />
-                      <Stat value={stats.todayCount} label="Scheduled Today" colorClass="text-white" />
-                      <Stat value={restoredCount} label="Restored · 24h" colorClass="text-mint" />
-                    </div>
-                  </div>
-
-                  {liveReports.length === 0 ? (
-                    <p className="text-sm text-gray-dim py-2">No published outages right now.</p>
-                  ) : (
-                    liveReports.map((r) => (
-                      <div key={r.id} className="flex items-center justify-between py-3 border-b border-glass-border last:border-0">
-                        <div className="flex items-center">
-                          <span
-                            className={`w-2 h-2 rounded-full mr-3 shrink-0 ${
-                              r.status === "ongoing" ? "bg-pink shadow-[0_0_10px_#F87171]"
-                              : r.status === "restored" ? "bg-mint shadow-[0_0_10px_#34D399]"
-                              : "bg-amber-status shadow-[0_0_10px_#FFB020]"
-                            }`}
-                          />
-                          <div>
-                            <p className="text-sm font-bold text-white">{r.locality}</p>
-                            <p className="text-[11.5px] text-gray-dim mt-0.5">
-                              <span className={`font-bold ${STATUS_TEXT_CLASS[r.status]}`}>
-                                {statusLabels[r.status]}
-                              </span>{" "}
-                              · {formatTimeIST(r.startTime)}–{formatTimeIST(r.endTime)}
-                            </p>
-                          </div>
-                        </div>
-                        <span className="text-xs text-gray-dim">{r.provider}</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </TiltCard>
-            </div>
           </div>
+        </div>
+      </div>
+
+      {/* NATIONAL/CURRENT STATUS BAR — real Bengaluru numbers only, no fake national totals */}
+      <div className="mx-auto max-w-[1280px] px-10 mb-11">
+        <div className="glass p-6 flex flex-wrap gap-8 justify-around">
+          <StatusBarItem icon={<LightningIcon className="w-5 h-5" filled />} value={stats.ongoingCount} label="Ongoing Outages" colorClass="text-pink" iconBg="bg-pink/10 border-pink/30 text-pink" />
+          <StatusBarItem icon={<CalendarIcon className="w-5 h-5" />} value={stats.todayCount} label="Scheduled Today" colorClass="text-amber-status" iconBg="bg-amber-status/10 border-amber-status/30 text-amber-status" />
+          <StatusBarItem icon={<ShieldIcon className="w-5 h-5" />} value={restoredCount} label="Restored · 24h" colorClass="text-mint" iconBg="bg-mint/10 border-mint/30 text-mint" />
+          <StatusBarItem icon={<LocationIcon className="w-5 h-5" />} value={stats.localitiesCovered} label="Localities Covered" colorClass="text-purple" iconBg="bg-purple/10 border-purple/30 text-purple" />
         </div>
       </div>
 
@@ -255,37 +240,72 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* BROWSE BY STATE */}
+      {/* BROWSE BY STATE + TOMORROW'S SCHEDULE */}
       <div className="mx-auto max-w-[1280px] px-10 mb-12">
-        <h2 className="text-xl font-extrabold mb-1 glow-heading">Browse by State</h2>
-        <p className="text-sm text-gray-dim mb-5">
-          Real outage counts for states we cover — others shown as roadmap, not fabricated data.
-        </p>
-        <div className="flex flex-wrap gap-3">
-          {allStates.map((s) => (
-            <TiltCard key={s.id} maxTilt={8} glowColor="rgba(160,32,240,0.3)">
-              <Link href={`/power-cut/${s.slug}/bengaluru`} className="glass px-5 py-4 flex flex-col min-w-[140px]">
-                <span className="font-bold text-sm text-white mb-1">{s.name}</span>
-                <span className="text-2xl font-extrabold text-magenta">{stats.totalPublished}</span>
-                <span className="text-[10px] font-bold text-gray-dim uppercase tracking-wide">Tracked Outages</span>
-              </Link>
-            </TiltCard>
-          ))}
-          {UPCOMING_STATES.map((name) => (
-            <span
-              key={name}
-              className="glass px-5 py-4 flex flex-col min-w-[140px] opacity-50 cursor-not-allowed"
-              title="Coming soon — not covered yet"
-            >
-              <span className="font-bold text-sm text-white mb-1">{name}</span>
-              <span className="text-[10px] font-extrabold text-gray-dim uppercase tracking-wide">Coming Soon</span>
-            </span>
-          ))}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <h2 className="text-xl font-extrabold mb-1 glow-heading">Browse by State</h2>
+            <p className="text-sm text-gray-dim mb-5">
+              Real outage counts for states we cover — others shown as roadmap, not fabricated data.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {allStates.map((s) => (
+                <TiltCard key={s.id} maxTilt={8} glowColor="rgba(160,32,240,0.3)">
+                  <Link href={`/power-cut/${s.slug}/bengaluru`} className="glass px-5 py-4 flex flex-col min-w-[140px]">
+                    <span className="font-bold text-sm text-white mb-1">{s.name}</span>
+                    <span className="text-2xl font-extrabold text-magenta">{stats.totalPublished}</span>
+                    <span className="text-[10px] font-bold text-gray-dim uppercase tracking-wide">Tracked Outages</span>
+                  </Link>
+                </TiltCard>
+              ))}
+              {UPCOMING_STATES.map((name) => (
+                <span
+                  key={name}
+                  className="glass px-5 py-4 flex flex-col min-w-[140px] opacity-50 cursor-not-allowed"
+                  title="Coming soon — not covered yet"
+                >
+                  <span className="font-bold text-sm text-white mb-1">{name}</span>
+                  <span className="text-[10px] font-extrabold text-gray-dim uppercase tracking-wide">Coming Soon</span>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-extrabold mb-1 glow-heading">Tomorrow&rsquo;s Scheduled Outages</h2>
+            <p className="text-sm text-gray-dim mb-5">Real, sourced planned outages — not projections.</p>
+            <div className="glass p-5">
+              {tomorrowOutages.length === 0 ? (
+                <p className="text-sm text-gray-dim py-2">No scheduled outages published for tomorrow yet.</p>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-[10px] font-extrabold text-gray-dim uppercase tracking-wide border-b border-glass-border">
+                      <th className="pb-2 pr-2">Locality</th>
+                      <th className="pb-2 pr-2">Time</th>
+                      <th className="pb-2">Provider</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tomorrowOutages.map((o) => (
+                      <tr key={o.id} className="border-b border-glass-border last:border-0">
+                        <td className="py-2.5 pr-2 font-bold text-white">{o.locality}</td>
+                        <td className="py-2.5 pr-2 text-gray-dim tabular-nums-mono text-xs">
+                          {formatTimeIST(o.startTime)}–{formatTimeIST(o.endTime)}
+                        </td>
+                        <td className="py-2.5 text-gray-dim text-xs">{o.provider}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* DISCOM FINDER */}
-      <div className="mx-auto max-w-[1280px] px-10 mb-12">
+      <div id="discom-finder" className="mx-auto max-w-[1280px] px-10 mb-12 scroll-mt-6">
         <h2 className="text-xl font-extrabold mb-1 glow-heading">Find Your Electricity Provider</h2>
         <p className="text-sm text-gray-dim mb-5">
           Real provider info for covered areas — no directory of unverified DISCOM details.
@@ -321,17 +341,70 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* MAP */}
+      {/* LIVE MAP + POWER CUTS TODAY */}
       <div className="mx-auto max-w-[1280px] px-10 mb-12">
-        <div className="flex items-baseline justify-between mb-5">
-          <h2 className="text-xl font-extrabold glow-heading">Locality map</h2>
-        </div>
-        <div className="glass overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-5 border-b border-glass-border">
-            <h3 className="text-[13px] font-extrabold tracking-wide">LIVE GRID STATUS</h3>
-            <span className="text-xs text-gray-dim">Bengaluru · IST</span>
+        <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-6">
+          <div>
+            <div className="flex items-baseline justify-between mb-5">
+              <h2 className="text-xl font-extrabold glow-heading">Live Power Outage Map</h2>
+            </div>
+            <div className="glass overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-glass-border">
+                <h3 className="text-[13px] font-extrabold tracking-wide">LIVE GRID STATUS</h3>
+                <span className="inline-flex items-center text-xs font-extrabold text-mint">
+                  <span className="w-1.5 h-1.5 rounded-full bg-mint mr-1.5 pulse-dot shadow-[0_0_8px_#34D399]" />
+                  LIVE
+                </span>
+              </div>
+              <MapLoader center={[22.0, 79.0]} zoom={4} markers={indiaMarkers} heightClassName="h-96" />
+            </div>
           </div>
-          <MapLoader center={[22.0, 79.0]} zoom={4} markers={indiaMarkers} heightClassName="h-96" />
+
+          <div>
+            <div className="flex items-baseline justify-between mb-5">
+              <h2 className="text-xl font-extrabold glow-heading">Power Cuts Today</h2>
+              <Link href="/power-cut/karnataka/bengaluru" className="text-purple text-sm font-semibold">View All →</Link>
+            </div>
+            <div className="glass p-5">
+              {liveReports.length === 0 ? (
+                <p className="text-sm text-gray-dim py-2">No published outages right now.</p>
+              ) : (
+                liveReports.map((r) => (
+                  <div key={r.id} className="flex items-center justify-between py-3 border-b border-glass-border last:border-0">
+                    <div className="flex items-center">
+                      <span
+                        className={`w-2 h-2 rounded-full mr-3 shrink-0 ${
+                          r.status === "ongoing" ? "bg-pink shadow-[0_0_10px_#F87171]"
+                          : r.status === "restored" ? "bg-mint shadow-[0_0_10px_#34D399]"
+                          : "bg-amber-status shadow-[0_0_10px_#FFB020]"
+                        }`}
+                      />
+                      <div>
+                        <p className="text-sm font-bold text-white">{r.locality}</p>
+                        <p className="text-[11.5px] text-gray-dim mt-0.5">
+                          <span className={`font-bold ${STATUS_TEXT_CLASS[r.status]}`}>
+                            {statusLabels[r.status]}
+                          </span>{" "}
+                          · {formatTimeIST(r.startTime)}–{formatTimeIST(r.endTime)}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-dim">{r.provider}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* QUICK ACTIONS */}
+      <div className="mx-auto max-w-[1280px] px-10 mb-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <QuickAction icon={<BellIcon className="w-5 h-5" />} title="Get Power Cut Alerts" desc="Subscribe for instant alerts (coming soon)" cta="Get Alerts" href="#stay-updated" disabled />
+          <QuickAction icon={<LightningIcon className="w-5 h-5" filled />} title="Report Power Outage" desc="Facing a power cut? Report it" cta="Report Now" href="/power-cut/karnataka/bengaluru" />
+          <QuickAction icon={<LocationIcon className="w-5 h-5" />} title="Find Your DISCOM" desc="Your electricity provider's contact info" cta="Find DISCOM" href="#discom-finder" />
+          <QuickAction icon={<CalendarIcon className="w-5 h-5" />} title="Outage Trends" desc="History, patterns for your area" cta="View Trends" href="/power-cut/karnataka/bengaluru" />
         </div>
       </div>
 
@@ -355,6 +428,61 @@ export default async function HomePage() {
                 </span>
               </span>
             ))}
+          </div>
+        </div>
+      </div>
+
+      {/* CHECK BY PINCODE */}
+      <div className="mx-auto max-w-[1280px] px-10 mb-12">
+        <h2 className="text-xl font-extrabold mb-1 glow-heading">Check Power Cuts by Pincode</h2>
+        <p className="text-sm text-gray-dim mb-5">Real lookup against our covered localities — no fabricated PIN database.</p>
+        <div className="glass p-6">
+          <form action="/api/pincode" className="flex flex-col sm:flex-row gap-3 max-w-md">
+            <input
+              type="text"
+              name="code"
+              placeholder="Enter 6-digit pincode..."
+              maxLength={6}
+              pattern="[0-9]{6}"
+              className="flex-1 bg-white/[0.03] border border-glass-border rounded-xl px-4 py-3 text-white placeholder:text-gray-dim outline-none focus:border-purple/60"
+            />
+            <button
+              type="submit"
+              className="rounded-xl px-6 py-3 font-bold text-sm text-white"
+              style={{ background: "linear-gradient(135deg, #FF17C9, #A020F0)" }}
+            >
+              Check
+            </button>
+          </form>
+          <p className="text-xs text-gray-dim mt-3">Example: 560066 → Whitefield, Bengaluru</p>
+          {pincodeNotFound && (
+            <p className="text-xs text-pink mt-2">
+              &ldquo;{pincodeNotFound}&rdquo; isn&rsquo;t in our covered localities yet.
+            </p>
+          )}
+          {pincodeInvalid && (
+            <p className="text-xs text-pink mt-2">Enter a valid 6-digit pincode.</p>
+          )}
+        </div>
+      </div>
+
+      {/* STAY UPDATED — honest, not built yet */}
+      <div id="stay-updated" className="mx-auto max-w-[1280px] px-10 mb-12 scroll-mt-6">
+        <div className="glass p-6">
+          <h2 className="text-lg font-extrabold mb-1">
+            Never Miss a Power Cut Update <span className="text-gray-dim font-semibold text-sm">(not built yet)</span>
+          </h2>
+          <p className="text-sm text-gray-dim mb-4">Subscribe to get instant alerts for your area.</p>
+          <div className="flex flex-col sm:flex-row gap-3 max-w-md">
+            <input
+              type="email"
+              disabled
+              placeholder="Enter your email address"
+              className="flex-1 bg-white/[0.02] border border-glass-border rounded-xl px-4 py-3 text-gray-dim placeholder:text-gray-dim cursor-not-allowed"
+            />
+            <button disabled className="rounded-xl px-6 py-3 font-bold text-sm text-gray-dim bg-white/5 cursor-not-allowed">
+              Coming Soon
+            </button>
           </div>
         </div>
       </div>
@@ -398,13 +526,61 @@ export default async function HomePage() {
   );
 }
 
-function Stat({ value, label, colorClass }: { value: number; label: string; colorClass: string }) {
+function StatusBarItem({
+  icon,
+  value,
+  label,
+  colorClass,
+  iconBg,
+}: {
+  icon: React.ReactNode;
+  value: number;
+  label: string;
+  colorClass: string;
+  iconBg: string;
+}) {
   return (
-    <div>
-      <div className={`tabular-nums-mono text-3xl font-extrabold ${colorClass}`}>{value}</div>
-      <div className="text-[10.5px] font-bold tracking-wide text-gray-dim mt-0.5">{label.toUpperCase()}</div>
+    <div className="flex items-center gap-3">
+      <div className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 ${iconBg}`}>
+        {icon}
+      </div>
+      <div>
+        <div className={`tabular-nums-mono text-2xl font-extrabold ${colorClass}`}>{value}</div>
+        <div className="text-[10.5px] font-bold tracking-wide text-gray-dim">{label}</div>
+      </div>
     </div>
   );
+}
+
+function QuickAction({
+  icon,
+  title,
+  desc,
+  cta,
+  href,
+  disabled,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+  cta: string;
+  href: string;
+  disabled?: boolean;
+}) {
+  const content = (
+    <div className="glass p-5 h-full">
+      <div className="w-10 h-10 rounded-lg bg-purple/10 border border-purple/30 flex items-center justify-center text-purple mb-3">
+        {icon}
+      </div>
+      <p className="font-bold text-sm text-white mb-1">{title}</p>
+      <p className="text-xs text-gray-dim mb-3 leading-relaxed">{desc}</p>
+      <span className={`text-xs font-bold ${disabled ? "text-gray-dim" : "text-magenta"}`}>{cta} →</span>
+    </div>
+  );
+  if (disabled) {
+    return <div className="opacity-60 cursor-not-allowed">{content}</div>;
+  }
+  return <Link href={href}>{content}</Link>;
 }
 
 function Step({ n, title, desc }: { n: string; title: string; desc: string }) {

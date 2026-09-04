@@ -175,6 +175,21 @@ export async function getHomepageStats() {
   };
 }
 
+export async function getLocalityByPincode(pincode: string) {
+  const rows = await db
+    .select({
+      locality: localities,
+      city: cities,
+      state: states,
+    })
+    .from(localities)
+    .innerJoin(cities, eq(localities.cityId, cities.id))
+    .innerJoin(states, eq(cities.stateId, states.id))
+    .where(eq(localities.postalCode, pincode))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
 export async function getCityDirectory() {
   const rows = await db
     .select({

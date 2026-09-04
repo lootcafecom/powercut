@@ -31,6 +31,25 @@ const [{ count }] = await sql`SELECT COUNT(*)::int as count FROM states`;
 
 if (count > 0) {
   console.log(`[bootstrap-db] Data already present (${count} states) — skipping seed.`);
+
+  // Backfill: earlier deployments seeded before postal codes existed on
+  // this seed script. Idempotent — only fills in NULL postal_code values,
+  // never overwrites anything already set (e.g. by an admin).
+  const PINCODE_BACKFILL = {
+    Whitefield: "560066",
+    "Electronic City": "560100",
+    Indiranagar: "560038",
+    Koramangala: "560034",
+    Jayanagar: "560011",
+    Yelahanka: "560064",
+  };
+  for (const [name, pincode] of Object.entries(PINCODE_BACKFILL)) {
+    await sql`
+      UPDATE localities SET postal_code = ${pincode}
+      WHERE name = ${name} AND postal_code IS NULL
+    `;
+  }
+
   await sql.end();
   process.exit(0);
 }
@@ -92,6 +111,15 @@ const LOCALITY_COORDS = {
   Yelahanka: [13.1007, 77.5963],
 };
 
+const LOCALITY_PINCODES = {
+  Whitefield: "560066",
+  "Electronic City": "560100",
+  Indiranagar: "560038",
+  Koramangala: "560034",
+  Jayanagar: "560011",
+  Yelahanka: "560064",
+};
+
 const localityIds = {};
 for (const name of [
   "Whitefield",
@@ -103,8 +131,9 @@ for (const name of [
 ]) {
   const slug = name.toLowerCase().replace(/\s+/g, "-");
   const [lat, lng] = LOCALITY_COORDS[name];
+  const pincode = LOCALITY_PINCODES[name];
   const [{ id }] = await sql`
-    INSERT INTO localities (city_id, name, slug, latitude, longitude) VALUES (${cityId}, ${name}, ${slug}, ${lat}, ${lng})
+    INSERT INTO localities (city_id, name, slug, latitude, longitude, postal_code) VALUES (${cityId}, ${name}, ${slug}, ${lat}, ${lng}, ${pincode})
     RETURNING id
   `;
   localityIds[name] = id;
