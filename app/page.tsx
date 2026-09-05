@@ -100,21 +100,21 @@ export default async function HomePage({
   return (
     <div>
       {/* HERO — full-width image at its exact aspect ratio (zero cropping,
-          guaranteed regardless of viewport width), text overlaps the
-          lower portion where the gradient fade keeps it readable. */}
+          guaranteed regardless of viewport width). Text is absolutely
+          positioned to fill the SAME box as the image and bottom-aligned,
+          so it scales correctly at any width — no guessed pixel offsets. */}
       <div className="relative">
-        <div className="relative">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/india-electricity-map.png"
-            alt="India electricity grid map with glowing outage points"
-            className="w-full aspect-[1717/916] object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-bg-deep via-bg-deep/50 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-bg-deep/75 via-bg-deep/25 to-transparent" />
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/images/india-electricity-map.png"
+          alt="India electricity grid map with glowing outage points"
+          className="w-full aspect-[1717/916] object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-bg-deep via-bg-deep/55 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-bg-deep/75 via-bg-deep/25 to-transparent" />
 
-        <div className="relative mx-auto max-w-[1280px] px-10 -mt-[220px] sm:-mt-[300px] pb-14">
+        <div className="absolute inset-0 flex items-end">
+        <div className="w-full mx-auto max-w-[1280px] px-10 pb-10 sm:pb-14">
           <div className="max-w-2xl">
             <div className="inline-flex items-center rounded-full border border-magenta/30 bg-magenta/10 px-3.5 py-1.5 mb-5 text-[11.5px] font-extrabold tracking-wide text-magenta backdrop-blur-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-mint mr-2 pulse-dot shadow-[0_0_8px_#34D399]" />
@@ -185,6 +185,7 @@ export default async function HomePage({
               </Link>
             </p>
           </div>
+        </div>
         </div>
       </div>
 
