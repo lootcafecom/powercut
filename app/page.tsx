@@ -113,8 +113,8 @@ export default async function HomePage({
         <div className="absolute inset-0 bg-gradient-to-t from-bg-deep via-bg-deep/55 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-bg-deep/75 via-bg-deep/25 to-transparent" />
 
-        <div className="absolute inset-0 flex items-end">
-        <div className="w-full mx-auto max-w-[1280px] px-10 pb-10 sm:pb-14">
+        <div className="absolute inset-0 flex items-center">
+        <div className="w-full mx-auto max-w-[1280px] px-10">
           <div className="max-w-2xl">
             <div className="inline-flex items-center rounded-full border border-magenta/30 bg-magenta/10 px-3.5 py-1.5 mb-5 text-[11.5px] font-extrabold tracking-wide text-magenta backdrop-blur-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-mint mr-2 pulse-dot shadow-[0_0_8px_#34D399]" />
