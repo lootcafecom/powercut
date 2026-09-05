@@ -108,7 +108,7 @@ export default async function HomePage({
         <img
           src="/images/india-electricity-map.png"
           alt="India electricity grid map with glowing outage points"
-          className="w-full aspect-[1717/916] object-cover object-center"
+          className="w-full aspect-[1] sm:aspect-[1.6] lg:aspect-[2.1] object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-bg-deep via-bg-deep/55 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-bg-deep/75 via-bg-deep/25 to-transparent" />
