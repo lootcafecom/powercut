@@ -70,7 +70,7 @@ body {
 
 /* Glass card — public pages only */
 .glass {
-  background: linear-gradient(145deg, rgba(25,5,60,0.90), rgba(8,2,30,0.95));
+  background: rgba(20, 5, 48, 0.75);
   border: 1px solid var(--color-glass-border);
   border-radius: 14px;
   box-shadow: 0 0 10px rgba(180,0,255,0.20), 0 0 30px rgba(180,0,255,0.08), inset 0 0 20px rgba(150,0,255,0.04);

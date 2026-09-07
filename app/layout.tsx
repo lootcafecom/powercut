@@ -13,9 +13,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-bg-deep text-white">
-        <div className="orb orb-1" />
-        <div className="orb orb-2" />
-        <div className="orb orb-3" />
         <SiteHeader />
         <main className="flex-1 relative z-[1]">{children}</main>
         <SiteFooter />
