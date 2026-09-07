@@ -34,7 +34,7 @@
 
   --color-pink: #F87171;   /* FIXED: ongoing / danger — never themed */
   --color-mint: #34D399;   /* FIXED: restored / good — never themed */
-  --color-amber-status: #FFB020; /* scheduled status */
+  --color-amber-status: #FFD400; /* scheduled status — yellow, matches map markers */
 
   --color-white: #F5F3FA;
   --color-gray: #C9C3DA;

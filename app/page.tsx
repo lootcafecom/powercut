@@ -318,7 +318,7 @@ export default async function HomePage({
                         className={`w-2 h-2 rounded-full mr-3 shrink-0 ${
                           r.status === "ongoing" ? "bg-pink shadow-[0_0_10px_#F87171]"
                           : r.status === "restored" ? "bg-mint shadow-[0_0_10px_#34D399]"
-                          : "bg-amber-status shadow-[0_0_10px_#FFB020]"
+                          : "bg-amber-status shadow-[0_0_10px_#FFD400]"
                         }`}
                       />
                       <div>
@@ -424,7 +424,7 @@ export default async function HomePage({
           <MapLoader center={[22.0, 79.0]} zoom={4} markers={indiaMarkers} heightClassName="h-[480px]" />
           <div className="flex flex-wrap gap-5 px-6 py-4 border-t border-glass-border">
             <LegendDot color="bg-pink" shadow="shadow-[0_0_8px_#F87171]" label="Ongoing" />
-            <LegendDot color="bg-amber-status" shadow="shadow-[0_0_8px_#FFB020]" label="Scheduled" />
+            <LegendDot color="bg-amber-status" shadow="shadow-[0_0_8px_#FFD400]" label="Scheduled" />
             <LegendDot color="bg-mint" shadow="shadow-[0_0_8px_#34D399]" label="Restored" />
             <LegendDot color="bg-gray-dim" shadow="" label="Not covered yet" muted />
           </div>
