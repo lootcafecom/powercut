@@ -1,9 +1,50 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Circle, GeoJSON } from "react-leaflet";
 import L from "leaflet";
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
 import "leaflet/dist/leaflet.css";
+
+// Simplified India country boundary (CC-BY 4.0, geoBoundaries project) —
+// small enough to fetch client-side, unlike the ~10MB detailed versions.
+const INDIA_OUTLINE_URL =
+  "https://raw.githubusercontent.com/wmgeolab/geoBoundaries/main/releaseData/gbOpen/IND/ADM0/geoBoundaries-IND-ADM0_simplified.geojson";
+
+function IndiaOutline() {
+  const [geoData, setGeoData] = useState<GeoJSON.GeoJsonObject | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(INDIA_OUTLINE_URL)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) setGeoData(data);
+      })
+      .catch(() => {
+        // Outline is decorative — if it fails to load (offline, source
+        // moved), the map still works fine without it.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!geoData) return null;
+
+  return (
+    <GeoJSON
+      data={geoData}
+      style={{
+        color: "#FF17C9",
+        weight: 2,
+        fillColor: "#FF17C9",
+        fillOpacity: 0.03,
+        opacity: 0.8,
+      }}
+    />
+  );
+}
+
 
 export interface MapMarker {
   id: string | number;
@@ -105,6 +146,7 @@ export function InteractiveMap({
         <TileLayer
           url="https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}"
         />
+        <IndiaOutline />
         {markers.map((m) => {
           const radius = AREA_RADIUS_M[m.status];
           return (

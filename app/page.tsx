@@ -86,6 +86,8 @@ export default async function HomePage({
   const bengaluruMarkerStatus: MapMarker["status"] =
     stats.ongoingCount > 0 ? "ongoing" : stats.todayCount > 0 ? "scheduled" : "normal";
 
+  // Only cities actually in the database get a marker — no placeholder
+  // pins for cities we don't have data for.
   const indiaMarkers: MapMarker[] = [
     {
       id: "bengaluru",
@@ -96,11 +98,6 @@ export default async function HomePage({
       popupContent: `${stats.todayCount} outage(s) today, ${stats.ongoingCount} ongoing`,
       href: "/power-cut/karnataka/bengaluru",
     },
-    { id: "delhi", lat: 28.6139, lng: 77.209, label: "Delhi", status: "muted", popupContent: "Not covered yet" },
-    { id: "mumbai", lat: 19.076, lng: 72.8777, label: "Mumbai", status: "muted", popupContent: "Not covered yet" },
-    { id: "kolkata", lat: 22.5726, lng: 88.3639, label: "Kolkata", status: "muted", popupContent: "Not covered yet" },
-    { id: "hyderabad", lat: 17.385, lng: 78.4867, label: "Hyderabad", status: "muted", popupContent: "Not covered yet" },
-    { id: "chennai", lat: 13.0827, lng: 80.2707, label: "Chennai", status: "muted", popupContent: "Not covered yet" },
   ];
 
   return (
@@ -146,16 +143,6 @@ export default async function HomePage({
                 placeholder="Search your locality or PIN code..."
                 className="flex-1 bg-glass border border-glass-border rounded-2xl sm:rounded-r-none px-5 py-4 text-white placeholder:text-gray-dim outline-none focus:border-purple/60 mb-2.5 sm:mb-0"
               />
-              <button
-                type="submit"
-                className="glow-badge-cta rounded-2xl sm:rounded-l-none px-7 font-extrabold text-sm py-4 sm:py-0 text-white"
-                style={{ background: "linear-gradient(135deg, #FF17C9, #A020F0)" }}
-              >
-                Check status
-              </button>
-            </form>
-
-            <div className="mb-4">
               <UseLocationButton
                 localities={cityLocalities
                   .filter((l) => l.latitude != null && l.longitude != null)
@@ -168,7 +155,14 @@ export default async function HomePage({
                     stateSlug: "karnataka",
                   }))}
               />
-            </div>
+              <button
+                type="submit"
+                className="glow-badge-cta rounded-2xl sm:rounded-l-none px-7 font-extrabold text-sm py-4 sm:py-0 text-white"
+                style={{ background: "linear-gradient(135deg, #FF17C9, #A020F0)" }}
+              >
+                Check status
+              </button>
+            </form>
 
             <div className="flex max-w-xl mb-4 flex-col sm:flex-row">
               <Link

@@ -61,24 +61,30 @@ export function UseLocationButton({ localities }: { localities: LocalityCoord[] 
   }
 
   return (
-    <div>
+    <div className="relative sm:mx-2 mb-2.5 sm:mb-0">
       <button
         type="button"
         onClick={handleClick}
         disabled={status === "locating"}
-        className="flex items-center gap-1.5 text-xs font-semibold text-purple hover:text-magenta disabled:opacity-60"
+        title="Use my location"
+        aria-label="Use my location"
+        className="w-full sm:w-14 h-14 flex items-center justify-center rounded-2xl bg-glass border border-glass-border text-purple hover:text-magenta hover:border-magenta/50 disabled:opacity-60 transition-colors"
       >
-        <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="3" />
-          <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+        {/* Crosshair / target icon, matching the reference image */}
+        <svg viewBox="0 0 24 24" className={`w-5 h-5 ${status === "locating" ? "animate-pulse" : ""}`} fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="7" />
+          <circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none" />
+          <path d="M12 1v3M12 20v3M1 12h3M20 12h3" strokeLinecap="round" />
         </svg>
-        {status === "locating" ? "Finding you..." : "Use my location"}
+        <span className="sm:hidden ml-2 text-sm font-semibold">
+          {status === "locating" ? "Finding you..." : "Use my location"}
+        </span>
       </button>
       {status === "error" && (
-        <p className="text-xs text-pink mt-1">Couldn&rsquo;t access your location — check browser permissions.</p>
+        <p className="absolute top-full left-0 mt-1 text-xs text-pink whitespace-nowrap">Location access denied.</p>
       )}
       {status === "outside" && (
-        <p className="text-xs text-pink mt-1">You&rsquo;re outside our covered areas right now — Bengaluru only, so far.</p>
+        <p className="absolute top-full left-0 mt-1 text-xs text-pink whitespace-nowrap">Outside our covered areas — Bengaluru only, so far.</p>
       )}
     </div>
   );
