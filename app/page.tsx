@@ -116,7 +116,7 @@ export default async function HomePage({
         <div className="absolute inset-0 bg-gradient-to-t from-bg-deep via-bg-deep/55 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-bg-deep/75 via-bg-deep/25 to-transparent" />
 
-        <div className="absolute inset-0 flex items-center">
+        <div className="absolute inset-0 flex items-center pb-[8%]">
         <div className="w-full mx-auto max-w-[1280px] px-10">
           <div className="max-w-2xl">
             <div className="inline-flex items-center rounded-full border border-magenta/30 bg-magenta/10 px-3.5 py-1.5 mb-5 text-[11.5px] font-extrabold tracking-wide text-magenta backdrop-blur-sm">
@@ -167,17 +167,29 @@ export default async function HomePage({
             <div className="flex max-w-xl mb-4 flex-col sm:flex-row">
               <Link
                 href="/power-cut/karnataka/bengaluru"
-                className="flex-1 rounded-2xl py-4 font-bold text-sm flex items-center justify-center gap-2 mb-2.5 sm:mb-0 border transition-all hover:brightness-125"
-                style={{ background: "#180B20", borderColor: "#FF4D6D", color: "#FF6B82" }}
+                className="trace-btn flex-1 rounded-2xl py-4 font-bold text-sm flex items-center justify-center gap-2 mb-2.5 sm:mb-0 text-white transition-all"
+                style={{
+                  background: "#D6293F",
+                  boxShadow: "0 0 16px rgba(255,59,74,0.55), 0 0 34px rgba(255,59,74,0.25)",
+                }}
               >
+                <svg className="trace-outline" preserveAspectRatio="none">
+                  <rect x="0" y="0" width="100%" height="100%" rx="16" pathLength="100" stroke="#FFB3BB" />
+                </svg>
                 <LightningIcon className="w-4 h-4" filled />
                 Report Outage
               </Link>
               <Link
                 href="/power-cut/karnataka/bengaluru"
-                className="flex-1 sm:ml-3 rounded-2xl py-4 font-bold text-sm flex items-center justify-center gap-2 border transition-all hover:brightness-125"
-                style={{ background: "#071A18", borderColor: "#27DFA0", color: "#42E5B0" }}
+                className="trace-btn flex-1 sm:ml-3 rounded-2xl py-4 font-bold text-sm flex items-center justify-center gap-2 text-bg-deep transition-all"
+                style={{
+                  background: "#FFB020",
+                  boxShadow: "0 0 16px rgba(255,176,32,0.55), 0 0 34px rgba(255,176,32,0.3)",
+                }}
               >
+                <svg className="trace-outline" preserveAspectRatio="none">
+                  <rect x="0" y="0" width="100%" height="100%" rx="16" pathLength="100" stroke="#FFF3D6" />
+                </svg>
                 <ShieldIcon className="w-4 h-4" />
                 Power is Back
               </Link>

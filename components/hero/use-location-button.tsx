@@ -81,10 +81,13 @@ export function UseLocationButton({ localities }: { localities: LocalityCoord[] 
         </span>
       </button>
       {status === "error" && (
-        <p className="absolute top-full left-0 mt-1 text-xs text-pink whitespace-nowrap">Location access denied.</p>
+        <p className="absolute bottom-full left-0 mb-2 z-10 text-xs text-pink whitespace-nowrap bg-bg-deep/95 px-2 py-1 rounded-md border border-pink/30">
+          Location access denied.
+        </p>
       )}
       {status === "outside" && (
-        <p className="absolute top-full left-0 mt-1 text-xs text-pink whitespace-nowrap">Outside our covered areas — Bengaluru only, so far.</p>
+        <p className="absolute bottom-full left-0 mb-2 z-10 text-xs text-pink whitespace-nowrap bg-bg-deep/95 px-2 py-1 rounded-md border border-pink/30">
+          Outside our covered areas — Bengaluru only, so far.</p>
       )}
     </div>
   );

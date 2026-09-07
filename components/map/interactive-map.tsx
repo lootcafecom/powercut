@@ -2,38 +2,43 @@
 
 import { MapContainer, TileLayer, Marker, Popup, Circle, GeoJSON } from "react-leaflet";
 import L from "leaflet";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment } from "react";
 import "leaflet/dist/leaflet.css";
 
-// Simplified India country boundary (CC-BY 4.0, geoBoundaries project) —
-// small enough to fetch client-side, unlike the ~10MB detailed versions.
-const INDIA_OUTLINE_URL =
-  "https://raw.githubusercontent.com/wmgeolab/geoBoundaries/main/releaseData/gbOpen/IND/ADM0/geoBoundaries-IND-ADM0_simplified.geojson";
+// Simplified India outline, embedded directly (no runtime fetch).
+// This is deliberately NOT survey-precision — it's a recognizable
+// approximation for a decorative glow effect. An earlier version tried
+// fetching a real boundary file from geoBoundaries at runtime, but that
+// project has an open, acknowledged bug specifically affecting India's
+// country-level data (github.com/wmgeolab/geoBoundaries issue #4265),
+// plus any runtime fetch depends on an external host's uptime/CORS
+// behavior we can't guarantee. Embedding avoids both problems entirely.
+// For survey-accurate borders, provide a specific GeoJSON file to bundle.
+const INDIA_OUTLINE: GeoJSON.Feature = {
+  type: "Feature",
+  properties: {},
+  geometry: {
+    type: "Polygon",
+    coordinates: [
+      [
+        [77.0, 35.5], [78.5, 34.0], [80.0, 31.0], [81.5, 30.2], [88.0, 27.5],
+        [92.0, 26.8], [97.3, 28.5], [96.5, 26.0], [95.0, 24.0], [93.5, 22.5],
+        [92.0, 22.0], [90.5, 22.8], [88.9, 22.0], [88.5, 21.5], [86.9, 20.5],
+        [86.5, 19.5], [84.0, 17.5], [82.2, 16.5], [80.3, 13.8], [80.0, 13.0],
+        [79.3, 10.3], [78.2, 8.9], [77.5, 8.1], [76.6, 8.3], [76.0, 10.0],
+        [75.4, 11.8], [74.5, 12.8], [74.5, 14.5], [73.5, 15.8], [73.0, 17.0],
+        [72.8, 19.1], [70.5, 20.9], [69.0, 22.4], [69.6, 23.6], [71.0, 24.3],
+        [70.2, 27.9], [71.5, 29.9], [73.5, 30.9], [74.4, 32.3], [75.5, 32.8],
+        [77.0, 35.5],
+      ],
+    ],
+  },
+};
 
 function IndiaOutline() {
-  const [geoData, setGeoData] = useState<GeoJSON.GeoJsonObject | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch(INDIA_OUTLINE_URL)
-      .then((res) => res.json())
-      .then((data) => {
-        if (!cancelled) setGeoData(data);
-      })
-      .catch(() => {
-        // Outline is decorative — if it fails to load (offline, source
-        // moved), the map still works fine without it.
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (!geoData) return null;
-
   return (
     <GeoJSON
-      data={geoData}
+      data={INDIA_OUTLINE}
       style={{
         color: "#FF17C9",
         weight: 2,
