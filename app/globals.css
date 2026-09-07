@@ -73,7 +73,7 @@ body {
   background: rgba(20, 5, 48, 0.75);
   border: 1px solid var(--color-glass-border);
   border-radius: 14px;
-  box-shadow: 0 0 10px rgba(180,0,255,0.20), 0 0 30px rgba(180,0,255,0.08), inset 0 0 20px rgba(150,0,255,0.04);
+  box-shadow: inset 0 0 20px rgba(150,0,255,0.04);
 }
 
 .glow-text {
