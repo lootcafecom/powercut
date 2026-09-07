@@ -16,25 +16,29 @@ export interface MapMarker {
 }
 
 const STATUS_COLOR: Record<MapMarker["status"], string> = {
-  ongoing: "#FF3B4A",
-  scheduled: "#FFB800",
-  restored: "#19D66B",
-  normal: "#00A8FF",
-  muted: "#3A4A66",
+  ongoing: "#E53935",
+  scheduled: "#FB8C00",
+  restored: "#43A047",
+  normal: "#1E88E5",
+  muted: "#9AA1B0",
 };
 
 function makeIcon(status: MapMarker["status"], size: number) {
   const color = STATUS_COLOR[status];
-  const glow = status === "muted" ? "none" : `0 0 8px ${color}`;
+  // Classic map-pin (teardrop) shape, matching the pin-drop style used
+  // by powercut.live's Live Grid Status map rather than plain dots.
+  const w = size;
+  const h = size * 1.35;
   return L.divIcon({
     className: "",
-    html: `<div style="
-      width:${size}px;height:${size}px;border-radius:9999px;
-      background:${color};box-shadow:${glow};
-      border:2px solid rgba(255,255,255,0.85);
-    "></div>`,
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
+    html: `<svg width="${w}" height="${h}" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z"
+            fill="${color}" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="12" r="5" fill="white"/>
+    </svg>`,
+    iconSize: [w, h],
+    iconAnchor: [w / 2, h],
+    popupAnchor: [0, -h],
   });
 }
 
@@ -55,26 +59,21 @@ export function InteractiveMap({
         center={center}
         zoom={zoom}
         scrollWheelZoom={false}
-        style={{ height: "100%", width: "100%", background: "#06142D" }}
+        style={{ height: "100%", width: "100%", background: "#e8e8e8" }}
       >
         <TileLayer
-          // Carto's free basemap tiles started requiring an API key on
-          // ~Aug 28, 2026 (a real, dated, external change — confirmed
-          // across multiple unrelated projects hitting the same break
-          // that week). Esri's Dark Gray Canvas remains free/keyless and
-          // is what other affected projects switched to for the same
-          // reason — no signup required.
-          url="https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
-          attribution='&copy; <a href="https://www.esri.com">Esri</a> &mdash; Esri, HERE, Garmin, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
-        <TileLayer
-          url="https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}"
+          // Standard OpenStreetMap tiles — matches the labeled, colored
+          // map style used by powercut.live's "Live Grid Status" map,
+          // rather than the minimal dark canvas used before. Free,
+          // keyless, the original/default OSM tile source.
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         {markers.map((m) => (
           <Marker
             key={m.id}
             position={[m.lat, m.lng]}
-            icon={makeIcon(m.status, m.status === "muted" ? 12 : 18)}
+            icon={makeIcon(m.status, m.status === "muted" ? 22 : 32)}
           >
             <Popup>
               <div style={{ minWidth: 140 }}>

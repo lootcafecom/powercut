@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { getHomepageStats, getOutagesForCity, getCityBySlug, getAllLocalities, getCityDirectory, getAllStates, getAllProviders } from "@/lib/db/queries";
 import { computeOutageStatus, statusLabels } from "@/lib/outage-status";
-import { formatTimeIST, isSameISTDate } from "@/lib/format";
+import { formatTimeIST, isSameISTDate, formatDateIST } from "@/lib/format";
 import { siteConfig } from "@/lib/config/site";
 import { MapLoader, type MapMarker } from "@/components/map/map-loader";
 import { TiltCard } from "@/components/ui/tilt-card";
 import { LightningIcon } from "@/components/icons/lightning";
 import { ShieldIcon, BellIcon, LocationIcon, CalendarIcon } from "@/components/icons";
+import { UseLocationButton } from "@/components/hero/use-location-button";
 
 export const dynamic = "force-dynamic";
 
@@ -71,6 +72,11 @@ export default async function HomePage({
   const restoredCount = cards.filter((c) => c.status === "restored").length;
 
   const tomorrowOutages = cards.filter((c) => isSameISTDate(c.startTime, 1));
+
+  const now = new Date();
+  const tomorrowDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const todayDateLabel = formatDateIST(now.toISOString());
+  const tomorrowDateLabel = formatDateIST(tomorrowDate.toISOString());
 
   const countsByLocality = new Map<number, number>();
   for (const c of cards) {
@@ -149,17 +155,34 @@ export default async function HomePage({
               </button>
             </form>
 
+            <div className="mb-4">
+              <UseLocationButton
+                localities={cityLocalities
+                  .filter((l) => l.latitude != null && l.longitude != null)
+                  .map((l) => ({
+                    slug: l.slug,
+                    name: l.name,
+                    lat: l.latitude as number,
+                    lng: l.longitude as number,
+                    citySlug: "bengaluru",
+                    stateSlug: "karnataka",
+                  }))}
+              />
+            </div>
+
             <div className="flex max-w-xl mb-4 flex-col sm:flex-row">
               <Link
                 href="/power-cut/karnataka/bengaluru"
-                className="flex-1 rounded-2xl py-4 font-bold text-sm flex items-center justify-center gap-2 bg-pink text-white mb-2.5 sm:mb-0 hover:shadow-[0_0_26px_rgba(248,113,113,0.5)] hover:brightness-105 transition-all"
+                className="flex-1 rounded-2xl py-4 font-bold text-sm flex items-center justify-center gap-2 mb-2.5 sm:mb-0 border transition-all hover:brightness-125"
+                style={{ background: "#180B20", borderColor: "#FF4D6D", color: "#FF6B82" }}
               >
                 <LightningIcon className="w-4 h-4" filled />
                 Report Outage
               </Link>
               <Link
                 href="/power-cut/karnataka/bengaluru"
-                className="flex-1 sm:ml-3 rounded-2xl py-4 font-bold text-sm flex items-center justify-center gap-2 bg-mint text-bg-deep hover:shadow-[0_0_26px_rgba(52,211,153,0.5)] hover:brightness-105 transition-all"
+                className="flex-1 sm:ml-3 rounded-2xl py-4 font-bold text-sm flex items-center justify-center gap-2 border transition-all hover:brightness-125"
+                style={{ background: "#071A18", borderColor: "#27DFA0", color: "#42E5B0" }}
               >
                 <ShieldIcon className="w-4 h-4" />
                 Power is Back
@@ -189,9 +212,9 @@ export default async function HomePage({
         </div>
       </div>
 
-      {/* NATIONAL/CURRENT STATUS BAR — real Bengaluru numbers only, no fake national totals */}
+      {/* STATUS BAR — equal 4-column grid, real Bengaluru numbers only */}
       <div className="mx-auto max-w-[1280px] px-10 mb-11">
-        <div className="glass p-6 flex flex-wrap gap-8 justify-around">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <StatusBarItem icon={<LightningIcon className="w-5 h-5" filled />} value={stats.ongoingCount} label="Ongoing Outages" colorClass="text-pink" iconBg="bg-pink/10 border-pink/30 text-pink" />
           <StatusBarItem icon={<CalendarIcon className="w-5 h-5" />} value={stats.todayCount} label="Scheduled Today" colorClass="text-amber-status" iconBg="bg-amber-status/10 border-amber-status/30 text-amber-status" />
           <StatusBarItem icon={<ShieldIcon className="w-5 h-5" />} value={restoredCount} label="Restored · 24h" colorClass="text-mint" iconBg="bg-mint/10 border-mint/30 text-mint" />
@@ -203,63 +226,63 @@ export default async function HomePage({
         <div className="glow-divider mb-12" />
       </div>
 
-      {/* CITIES DIRECTORY */}
+      {/* CITIES DIRECTORY — equal-size grid cards */}
       <div className="mx-auto max-w-[1280px] px-10 mb-12">
         <h2 className="text-xl font-extrabold mb-1 glow-heading">Cities</h2>
         <p className="text-sm text-gray-dim mb-5">
           Individual pages per city, added as real data sources are found —
           nothing here is fabricated to look more complete than it is.
         </p>
-        <div className="flex flex-wrap gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {cityDirectory.map((c) => (
-            <TiltCard key={c.cityId} maxTilt={10} glowColor="rgba(255,23,201,0.3)">
-              <Link
-                href={`/power-cut/${c.stateSlug}/${c.citySlug}`}
-                className="glass px-5 py-3 flex items-center gap-2.5"
-              >
-                <span className={`w-2 h-2 rounded-full ${c.isLive ? "bg-mint shadow-[0_0_8px_#34D399]" : "bg-gray-dim"}`} />
-                <span className="font-bold text-sm text-white">{c.cityName}</span>
-                <span className="text-xs text-gray-dim">{c.stateName}</span>
-                {c.isLive && (
-                  <span className="text-[10px] font-extrabold text-mint uppercase tracking-wide">Live</span>
-                )}
-              </Link>
-            </TiltCard>
+            <Link
+              key={c.cityId}
+              href={`/power-cut/${c.stateSlug}/${c.citySlug}`}
+              className="glass p-4 flex flex-col items-center text-center"
+            >
+              <span className={`w-2 h-2 rounded-full mb-2 ${c.isLive ? "bg-mint shadow-[0_0_8px_#34D399]" : "bg-gray-dim"}`} />
+              <span className="font-bold text-sm text-white">{c.cityName}</span>
+              <span className="text-xs text-gray-dim mb-1">{c.stateName}</span>
+              {c.isLive ? (
+                <span className="text-[10px] font-extrabold text-mint uppercase tracking-wide">Live</span>
+              ) : (
+                <span className="text-[10px] font-extrabold text-gray-dim uppercase tracking-wide">&nbsp;</span>
+              )}
+            </Link>
           ))}
           {UPCOMING_CITIES.map((name) => (
             <span
               key={name}
-              className="glass px-5 py-3 flex items-center gap-2.5 opacity-50 cursor-not-allowed"
+              className="glass p-4 flex flex-col items-center text-center opacity-50 cursor-not-allowed"
               title="Coming soon — not covered yet"
             >
-              <span className="w-2 h-2 rounded-full bg-gray-dim" />
+              <span className="w-2 h-2 rounded-full bg-gray-dim mb-2" />
               <span className="font-bold text-sm text-white">{name}</span>
+              <span className="text-xs text-gray-dim mb-1">&nbsp;</span>
               <span className="text-[10px] font-extrabold text-gray-dim uppercase tracking-wide">Coming Soon</span>
             </span>
           ))}
         </div>
       </div>
 
-      {/* BROWSE BY STATE — standalone, full width */}
+      {/* BROWSE BY STATE — equal-size grid cards */}
       <div className="mx-auto max-w-[1280px] px-10 mb-12">
         <h2 className="text-xl font-extrabold mb-1 glow-heading">Browse by State</h2>
         <p className="text-sm text-gray-dim mb-5">
           Real outage counts for states we cover — others shown as roadmap, not fabricated data.
         </p>
-        <div className="flex flex-wrap gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {allStates.map((s) => (
-            <TiltCard key={s.id} maxTilt={8} glowColor="rgba(160,32,240,0.3)">
-              <Link href={`/power-cut/${s.slug}/bengaluru`} className="glass px-5 py-4 flex flex-col min-w-[140px]">
-                <span className="font-bold text-sm text-white mb-1">{s.name}</span>
-                <span className="text-2xl font-extrabold text-magenta">{stats.totalPublished}</span>
-                <span className="text-[10px] font-bold text-gray-dim uppercase tracking-wide">Tracked Outages</span>
-              </Link>
-            </TiltCard>
+            <Link key={s.id} href={`/power-cut/${s.slug}/bengaluru`} className="glass p-4 flex flex-col items-center text-center">
+              <span className="font-bold text-sm text-white mb-1">{s.name}</span>
+              <span className="text-2xl font-extrabold text-magenta">{stats.totalPublished}</span>
+              <span className="text-[10px] font-bold text-gray-dim uppercase tracking-wide">Tracked Outages</span>
+            </Link>
           ))}
           {UPCOMING_STATES.map((name) => (
             <span
               key={name}
-              className="glass px-5 py-4 flex flex-col min-w-[140px] opacity-50 cursor-not-allowed"
+              className="glass p-4 flex flex-col items-center text-center opacity-50 cursor-not-allowed"
               title="Coming soon — not covered yet"
             >
               <span className="font-bold text-sm text-white mb-1">{name}</span>
@@ -269,15 +292,16 @@ export default async function HomePage({
         </div>
       </div>
 
-      {/* TODAY + TOMORROW — one row, side by side */}
+      {/* TODAY + TOMORROW — one row, side by side, equal height */}
       <div className="mx-auto max-w-[1280px] px-10 mb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div>
-            <div className="flex items-baseline justify-between mb-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+          <div className="flex flex-col">
+            <div className="flex items-baseline justify-between mb-1">
               <h2 className="text-xl font-extrabold glow-heading">Power Cuts Today</h2>
               <Link href="/power-cut/karnataka/bengaluru" className="text-purple text-sm font-semibold">View All →</Link>
             </div>
-            <div className="glass p-5">
+            <p className="text-sm text-gray-dim mb-5">{todayDateLabel}</p>
+            <div className="glass p-5 flex-1">
               {liveReports.length === 0 ? (
                 <p className="text-sm text-gray-dim py-2">No published outages right now.</p>
               ) : (
@@ -308,10 +332,10 @@ export default async function HomePage({
             </div>
           </div>
 
-          <div>
+          <div className="flex flex-col">
             <h2 className="text-xl font-extrabold mb-1 glow-heading">Tomorrow&rsquo;s Scheduled Outages</h2>
-            <p className="text-sm text-gray-dim mb-5">Real, sourced planned outages — not projections.</p>
-            <div className="glass p-5">
+            <p className="text-sm text-gray-dim mb-5">{tomorrowDateLabel}</p>
+            <div className="glass p-5 flex-1">
               {tomorrowOutages.length === 0 ? (
                 <p className="text-sm text-gray-dim py-2">No scheduled outages published for tomorrow yet.</p>
               ) : (
