@@ -155,6 +155,24 @@ export default async function CityPowerCutPage({ params }: PageProps) {
         </div>
       </div>
 
+      <div className="mt-6 glass p-6">
+        <h2 className="text-lg font-bold text-white">Browse Areas in {city.name}</h2>
+        <p className="mt-1 text-sm text-gray-dim">
+          Each area has its own page with live status, history, and a local map.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2.5">
+          {cityLocalitiesFull.map((l) => (
+            <Link
+              key={l.id}
+              href={`/power-cut/${stateSlug}/${citySlug}/${l.slug}`}
+              className="rounded-full border border-glass-border bg-white/[0.03] px-4 py-2 text-sm font-semibold text-white hover:border-purple/50 transition-colors"
+            >
+              {l.name}
+            </Link>
+          ))}
+        </div>
+      </div>
+
       <div className="mt-6 flex flex-col gap-4">
         <CommunityReportsPanel summaries={reportSummaries} />
         <div className="flex justify-end">

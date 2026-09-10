@@ -20,6 +20,71 @@ export async function getCityBySlug(stateSlug: string, citySlug: string) {
   return rows[0] ?? null;
 }
 
+export async function getLocalityBySlug(cityId: number, localitySlug: string) {
+  const rows = await db
+    .select()
+    .from(localities)
+    .where(and(eq(localities.cityId, cityId), eq(localities.slug, localitySlug)))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+/**
+ * Real historical outage stats for one locality, split into 24h/7d/30d
+ * windows. Returns actual counts from the database — on a fresh
+ * install these will be small/sparse since there's no accumulated
+ * history yet, which is expected, not a bug.
+ */
+export async function getOutageHistoryForLocality(localityId: number) {
+  const now = Date.now();
+  const windows = {
+    last24h: new Date(now - 24 * 60 * 60 * 1000),
+    last7d: new Date(now - 7 * 24 * 60 * 60 * 1000),
+    last30d: new Date(now - 30 * 24 * 60 * 60 * 1000),
+  };
+
+  const rows = await db
+    .select({ outage: powerOutages })
+    .from(powerOutages)
+    .where(
+      and(
+        eq(powerOutages.localityId, localityId),
+        eq(powerOutages.verificationStatus, "published"),
+        gte(powerOutages.startTime, windows.last30d.toISOString())
+      )
+    );
+
+  function summarize(since: Date) {
+    const inWindow = rows.filter((r) => new Date(r.outage.startTime) >= since);
+    const durations = inWindow.map((r) => {
+      const end = r.outage.actualEndTime ?? r.outage.endTime;
+      return (new Date(end).getTime() - new Date(r.outage.startTime).getTime()) / 60000;
+    });
+    const avgMinutes = durations.length ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
+    return { count: inWindow.length, avgMinutes: Math.round(avgMinutes) };
+  }
+
+  // Daily bucket counts for the last 30 days, oldest first — feeds the chart.
+  const dailyBuckets: { date: string; count: number }[] = [];
+  for (let i = 29; i >= 0; i--) {
+    const dayStart = new Date(now - i * 24 * 60 * 60 * 1000);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+    const count = rows.filter((r) => {
+      const t = new Date(r.outage.startTime).getTime();
+      return t >= dayStart.getTime() && t < dayEnd.getTime();
+    }).length;
+    dailyBuckets.push({ date: dayStart.toISOString().slice(0, 10), count });
+  }
+
+  return {
+    last24h: summarize(windows.last24h),
+    last7d: summarize(windows.last7d),
+    last30d: summarize(windows.last30d),
+    dailyBuckets,
+  };
+}
+
 export async function getOutagesForCity(cityId: number) {
   return db
     .select({
