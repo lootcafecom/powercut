@@ -50,6 +50,26 @@ if (count > 0) {
     `;
   }
 
+  // Same gap, but for latitude/longitude: any database created before
+  // coordinates were added to the seed script has NULL lat/lng on these
+  // rows forever, since "skip seed" means the original INSERT (which set
+  // coordinates) never runs again. This crashed the map on real
+  // deployments (Leaflet given null coordinates) until this backfill.
+  const COORD_BACKFILL = {
+    Whitefield: [12.9698, 77.75],
+    "Electronic City": [12.8452, 77.6602],
+    Indiranagar: [12.9784, 77.6408],
+    Koramangala: [12.9352, 77.6245],
+    Jayanagar: [12.9308, 77.5838],
+    Yelahanka: [13.1007, 77.5963],
+  };
+  for (const [name, [lat, lng]] of Object.entries(COORD_BACKFILL)) {
+    await sql`
+      UPDATE localities SET latitude = ${lat}, longitude = ${lng}
+      WHERE name = ${name} AND (latitude IS NULL OR longitude IS NULL)
+    `;
+  }
+
   await sql.end();
   process.exit(0);
 }

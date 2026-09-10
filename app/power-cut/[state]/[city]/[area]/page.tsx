@@ -272,18 +272,26 @@ export default async function AreaPage({ params }: PageProps) {
         <OutageHistoryChart history={history} />
       </div>
 
-      {/* MAP */}
-      <div className="mt-6">
-        <h2 className="text-lg font-extrabold mb-3">{locality.name} &amp; Nearby Areas Map</h2>
-        <div className="glass overflow-hidden">
-          <MapLoader
-            center={[locality.latitude as number, locality.longitude as number]}
-            zoom={13}
-            markers={localityMarkers}
-            heightClassName="h-80"
-          />
+      {/* MAP — defensive: never hand Leaflet a null coordinate. A real
+          production bug (locality rows created before coordinates were
+          added to the seed script) crashed the whole page this way. */}
+      {locality.latitude != null && locality.longitude != null ? (
+        <div className="mt-6">
+          <h2 className="text-lg font-extrabold mb-3">{locality.name} &amp; Nearby Areas Map</h2>
+          <div className="glass overflow-hidden">
+            <MapLoader
+              center={[locality.latitude, locality.longitude]}
+              zoom={13}
+              markers={localityMarkers}
+              heightClassName="h-80"
+            />
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="mt-6 glass p-5 text-sm text-gray-dim">
+          Map unavailable — this area is missing coordinates in the database.
+        </div>
+      )}
 
       {/* PROVIDER */}
       {provider && (
